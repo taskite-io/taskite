@@ -1,0 +1,625 @@
+syntax = "proto3";
+
+package gateway_protocol;
+
+option java_multiple_files = true;
+option java_package = "io.taskite.gateway.protocol";
+option go_package = "github.com/taskite-io/taskite/clients/go/pkg/pb;pb";
+
+// Defines a Job subscription distributed through PD to the Broker partitions.
+message CreateJobSubscriptionRequest {
+  // Optional display name of the subscription.
+  string name = 2;
+  // Required nonblank Job type; only one subscription exists per cluster and tenant for this type.
+  string jobType = 3;
+  // Optional template variables as a JSON object; empty or blank means {}.
+  // Job creation merges these with request variables; request keys take precedence.
+  string variables = 4;
+  // Initial retry count in the subscription template; omitted defaults to 3; must be positive.
+  optional int32 retries = 6;
+  // Initial template priority; omitted defaults to 50; valid range is 1 through 100.
+  optional int32 priority = 7;
+}
+
+message CreateJobSubscriptionResponse {
+  // Positive subscription key; repeated creates for the same cluster, tenant and jobType reuse it.
+  // The response confirms PD persistence; Broker partition acknowledgements are asynchronous.
+  int64 key = 1;
+}
+
+// Selects the schedule syntax of an independent timer subscription.
+enum TimerType {
+  // Unspecified or unknown schedule types are rejected.
+  TIMER_TYPE_UNSPECIFIED = 0;
+  // One execution after a positive ISO8601 interval, such as PT30S or P1D.
+  DURATION = 1;
+  // Repeated ISO8601 interval: R[n]/[start/]interval; R without a count repeats indefinitely.
+  CYCLE = 2;
+  // SPRING53 cron with six fields: second, minute, hour, day of month, month and day of week.
+  CRON = 3;
+}
+
+// Independent PD timer. Each occurrence creates one Job for every jobTypes entry.
+message CreateTimerSubscriptionRequest {
+  // Required nonblank name of the independent timer subscription.
+  string name = 2;
+  // Required schedule type; must be DURATION, CYCLE or CRON.
+  TimerType type = 3;
+  // Required literal schedule valid for the selected type.
+  // Subsequent executions use this schedule and the PD time zone captured at creation.
+  string expression = 4;
+  // Required nonempty list of distinct, nonblank Job types; each occurrence creates one Job per type.
+  // Every type must have a fully created JobSubscription in the current cluster and tenant.
+  repeated string jobTypes = 5;
+  // Optional JSON object copied to every created Job; empty means {}.
+  string variables = 6;
+}
+
+message CreateTimerSubscriptionResponse {
+  // Positive key of the newly created timer subscription.
+  int64 key = 1;
+  // Planned first execution time as a Unix timestamp in milliseconds.
+  int64 dueDate = 2;
+}
+
+message DeleteTimerSubscriptionRequest {
+  // Positive key returned by CreateTimerSubscription; must belong to the current cluster and tenant.
+  int64 key = 1;
+}
+
+message DeleteTimerSubscriptionResponse {
+  // Key of the deleted timer subscription.
+  int64 key = 1;
+}
+
+message DeleteJobSubscriptionRequest {
+  // Positive key returned by CreateJobSubscription; must belong to the current cluster and tenant.
+  int64 key = 1;
+}
+
+message DeleteJobSubscriptionResponse {
+  // Key of the subscription scheduled for deletion; Broker partition deletion is asynchronous.
+  // Applying deletion removes Jobs associated with this subscription key, their incidents and variables.
+  int64 key = 1;
+}
+
+message CreateJobRequest {
+  // Required nonblank Job type with an existing subscription for the resolved tenant.
+  // Broker rejects creation with NOT_FOUND when no matching subscription is present.
+  string jobType = 1;
+  // Optional Job variables as a JSON object; empty or blank means {}.
+  // Merged with the matched subscription's template variables; request keys take precedence.
+  string variables = 2;
+  // Initial retry count; omitted defaults to 3; must be positive.
+  optional int32 retries = 4;
+  // Initial priority; omitted defaults to 50; must be nonnegative; higher values activate first.
+  optional int32 priority = 5;
+}
+
+message CreateJobResponse {
+  // Positive key of the committed Job; includes the partition used for subsequent operations.
+  int64 jobKey = 1;
+  // Type of the created Job.
+  string jobType = 2;
+  // Tenant resolved from the authenticated request context.
+  string tenantId = 3;
+  // Positive key of the subscription matched by Job type and tenant at creation.
+  int64 subscriptionKey = 4;
+}
+
+message ActivateJobsRequest {
+  // Required nonblank Job type to activate across the cluster's ready partitions.
+  string type = 1;
+  // Optional display name recorded on activated Jobs; does not identify a Worker session.
+  string worker = 2;
+  // Activation lease duration in milliseconds; zero defaults to 30000; negative values are invalid.
+  int64 timeout = 3;
+  // Maximum total Jobs across all response batches, partitions and tenants.
+  // Zero defaults to 100; negative values are invalid.
+  int32 maxJobsToActivate = 4;
+  // Names of Job variables to return; empty returns all variables; unknown names are omitted.
+  repeated string fetchVariable = 5;
+  // Long-poll duration in milliseconds; zero defaults to 10000; negative values perform one scan.
+  // Expiration without Jobs completes the stream successfully without a response batch.
+  int64 requestTimeout = 6;
+  // Authorized tenants to scan; empty selects the current tenant; duplicates are collapsed.
+  // Entries must be nonblank and cannot grant access to otherwise unauthorized tenants.
+  repeated string tenantIds = 7;
+  // PD-registered Worker instance ID; required for activation when Worker lease fencing is enabled.
+  string workerId = 8;
+  // Positive session token returned by PD; required with workerId when lease fencing is enabled.
+  int64 workerLeaseToken = 9;
+}
+
+message ActivateJobsResponse {
+  // Jobs whose activation was committed before this batch was emitted.
+  repeated ActivatedJob jobs = 1;
+}
+
+// Job details returned by activation or QueryJob; querying does not acquire an activation lease.
+message ActivatedJob {
+  // Positive Job key; includes the partition used for Job operations.
+  int64 key = 1;
+  // Job type used for worker activation.
+  string type = 2;
+  // Positive subscription key matched by Job type and tenant at creation.
+  int64 subscriptionKey = 3;
+  // Worker display name stored on the Job; may be empty before activation.
+  string worker = 6;
+  // Current remaining retry count; activation returns only Jobs with positive retries.
+  int32 retries = 7;
+  // Stored activation deadline as a Unix timestamp in milliseconds; zero if no deadline is set.
+  int64 deadline = 8;
+  // Job variables as a JSON object; activation applies fetchVariable, while QueryJob returns all.
+  string variables = 9;
+  // Tenant that owns the Job.
+  string tenantId = 10;
+  // Worker instance ID stored on the activation; may be empty when no Worker session is attached.
+  string workerId = 11;
+  // Worker session token stored on the activation; zero when no Worker session is attached.
+  int64 workerLeaseToken = 12;
+  // Current signed int32 priority; higher values activate first.
+  int32 priority = 13;
+}
+
+message CompleteJobRequest {
+  // Job key returned by creation, activation or QueryJob; routes to the embedded partition.
+  int64 jobKey = 1;
+  // Completion result recorded with the completed Job as a JSON object; empty or blank means {}.
+  string variables = 2;
+  // Worker instance ID from the activation; must match the Job when lease fencing is enabled.
+  string workerId = 3;
+  // Session token from the activation; must match the Job when lease fencing is enabled.
+  int64 workerLeaseToken = 4;
+}
+
+message CompleteJobResponse {
+  // Key of the completed Job.
+  int64 jobKey = 1;
+  // Type of the completed Job.
+  string jobType = 2;
+  // Worker display name stored on the completed Job.
+  string worker = 3;
+  // Worker instance ID stored on the completed Job.
+  string workerId = 4;
+}
+
+message FailJobRequest {
+  // Positive Job key returned by creation, activation or QueryJob.
+  int64 jobKey = 1;
+  // Retry count to set explicitly; must be nonnegative; zero creates an incident if none exists.
+  int32 retries = 2;
+  // Optional failure description; retained on the failed Job and any newly created incident.
+  string errorMessage = 3;
+  // Nonnegative delay in milliseconds before retry activation; zero makes retries immediately eligible.
+  int64 retryBackOff = 4;
+  // JSON object merged into Job variables; supplied top-level names replace existing values.
+  // Empty or blank means {} and leaves existing variables unchanged.
+  string variables = 5;
+  // Worker instance ID from the activation; must match the Job when lease fencing is enabled.
+  string workerId = 6;
+  // Session token from the activation; must match the Job when lease fencing is enabled.
+  int64 workerLeaseToken = 7;
+}
+
+// An empty response acknowledges the committed Job failure.
+message FailJobResponse {}
+
+message UpdateJobRetriesRequest {
+  // Positive key of the Job whose retry count is updated.
+  int64 jobKey = 1;
+  // New retry count; must be positive; an existing incident still requires ResolveIncident.
+  int32 retries = 2;
+}
+
+// An empty response acknowledges the committed retry-count update.
+message UpdateJobRetriesResponse {}
+
+message UpdateJobTimeoutRequest {
+  // Positive key of an activated Job with a stored activation deadline.
+  int64 jobKey = 1;
+  // Positive duration in milliseconds, measured from Broker command processing time.
+  // Sets a new deadline and may either shorten or extend the current lease.
+  int64 timeout = 2;
+  // Worker instance ID from the activation; must match the Job when lease fencing is enabled.
+  string workerId = 3;
+  // Session token from the activation; must match the Job when lease fencing is enabled.
+  int64 workerLeaseToken = 4;
+}
+
+// An empty response acknowledges the committed activation-deadline update.
+message UpdateJobTimeoutResponse {}
+
+message UpdateJobPriorityRequest {
+  // Positive key of the Job whose priority is updated.
+  int64 jobKey = 1;
+  // New signed int32 priority; higher values activate first; zero and negative values are supported.
+  int32 priority = 2;
+}
+
+// An empty response acknowledges the committed priority update.
+message UpdateJobPriorityResponse {}
+
+message QueryJobRequest {
+  // Job key returned by creation or activation; routes to the embedded partition.
+  int64 jobKey = 1;
+}
+
+message CancelJobRequest {
+  // Positive key of the Job to cancel in the current tenant.
+  int64 jobKey = 1;
+}
+
+message CancelJobResponse {
+  // Key of the canceled Job; its variables and any associated incident have been removed.
+  int64 jobKey = 1;
+}
+
+message QueryIncidentRequest {
+  // Positive key of the Job whose current incident is queried.
+  int64 jobKey = 1;
+}
+
+message QueryIncidentResponse {
+  // Positive incident key; use this key with ResolveIncident.
+  int64 key = 1;
+  // Description of the error that created the incident.
+  string errorMessage = 2;
+  // Error type name, such as JOB_NO_RETRIES.
+  string errorType = 3;
+  // Key of the Job associated with the incident.
+  int64 jobKey = 4;
+  // Tenant that owns the incident.
+  string tenantId = 5;
+}
+
+message ResolveIncidentRequest {
+  // Positive incident key returned by QueryIncident; routes to the embedded partition.
+  int64 incidentKey = 1;
+}
+
+// An empty response acknowledges the committed incident resolution.
+message ResolveIncidentResponse {}
+
+message SetVariablesRequest {
+  // Positive key of the Job whose variables are updated.
+  int64 jobKey = 1;
+  // JSON object merged into Job variables; supplied top-level names replace existing values.
+  // Empty or blank means {} and leaves existing variables unchanged.
+  string variables = 2;
+}
+
+message SetVariablesResponse {
+  // Key of the Job whose variable update was committed.
+  int64 jobKey = 1;
+}
+
+/*
+  Public Job and subscription API.
+
+  Cluster selection uses exactly one x-cluster-id metadata value, matching
+  [A-Za-z0-9._-]+ with at most 128 characters. Tenant identity comes from the
+  configured authentication interceptors; taskite-tenant-id may select an
+  already authorized tenant. With multi-tenancy disabled, the default tenant is used.
+
+  Common Errors (in addition to the operation-specific errors below):
+    INVALID_ARGUMENT:
+      - x-cluster-id metadata is missing, duplicated or invalid
+    UNAUTHENTICATED:
+      - required tenant identity was not supplied by authentication
+    PERMISSION_DENIED:
+      - the requested tenant is not authorized
+    NOT_FOUND:
+      - the target cluster does not exist
+    UNAVAILABLE:
+      - the Placement Driver, Broker endpoint or required routing topology is unavailable
+    FAILED_PRECONDITION:
+      - a request reaches an endpoint that is no longer the required leader
+    RESOURCE_EXHAUSTED:
+      - the request queue or supported record size limit is exceeded
+    DEADLINE_EXCEEDED:
+      - the RPC or Broker dispatch deadline expires
+    CANCELLED:
+      - the caller cancels the RPC
+    INTERNAL:
+      - an unexpected processing, persistence or response error occurs
+*/
+service Gateway {
+  /*
+  Creates and distributes a Job subscription through the Placement Driver.
+
+  Only one subscription exists for each cluster, tenant and jobType. Repeated
+  valid creates return the original key and retain its first definition.
+  Success confirms PD persistence; Broker partition acknowledgements are asynchronous.
+  A new subscription key can be created after deletion is acknowledged by all targets.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobType is blank
+      - variables is not a valid JSON object
+      - retries is not positive, or priority is outside 1 through 100
+    NOT_FOUND:
+      - a configured mirror target cluster does not exist
+    UNAVAILABLE:
+      - the Placement Driver or cluster topology is unavailable
+  */
+  rpc CreateJobSubscription(CreateJobSubscriptionRequest) returns (CreateJobSubscriptionResponse);
+
+  /*
+  Requests deletion of a Job subscription from its distributed Broker partitions.
+
+  Success confirms that PD persisted the deletion request; removal on Broker
+  partitions is asynchronous. Repeating the same deletion reuses its distribution.
+  Each partition physically removes the subscription and all in-flight Jobs associated
+  with its subscriptionKey, including their incidents and variables.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - key is not positive
+    NOT_FOUND:
+      - the subscription does not exist in the current cluster and tenant
+      - a cluster targeted by the subscription distribution no longer exists
+    ALREADY_EXISTS:
+      - the deletion conflicts with its existing distribution
+    UNAVAILABLE:
+      - the Placement Driver or cluster topology is unavailable
+  */
+  rpc DeleteJobSubscription(DeleteJobSubscriptionRequest) returns (DeleteJobSubscriptionResponse);
+
+  /*
+  Creates an independent timer subscription managed by the Placement Driver.
+
+  The literal schedule and PD time zone are retained for subsequent executions and recovery.
+  Each occurrence creates one
+  Job per jobType with the supplied variables, retries 3 and priority 50.
+  Broker associates each Job with the subscription matching its jobType and tenant.
+  Template variables from each matched subscription are merged with the supplied timer variables.
+  Every create allocates a new timer subscription key.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - name is blank, type is unsupported, or expression is blank or invalid for that type
+      - variables is not a valid JSON object
+      - jobTypes is empty or contains blank or duplicate types
+      - the schedule has no next execution time or exceeds the supported time range
+    NOT_FOUND:
+      - the target cluster does not exist
+      - any jobType lacks a fully created JobSubscription in the current cluster and tenant
+      - a required JobSubscription is still being created or has been deleted
+    UNAVAILABLE:
+      - the Placement Driver or cluster topology is unavailable
+  */
+  rpc CreateTimerSubscription(CreateTimerSubscriptionRequest) returns (CreateTimerSubscriptionResponse);
+
+  /*
+  Deletes an active timer subscription and removes its scheduled executions in PD.
+
+  Success confirms removal of the subscription and its due-date index. Jobs already
+  created by the timer continue independently; deletion does not roll them back.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - key is not positive
+    NOT_FOUND:
+      - the active timer does not exist in the current cluster and tenant
+      - the timer has already been deleted or its schedule is exhausted
+    UNAVAILABLE:
+      - the Placement Driver or cluster topology is unavailable
+  */
+  rpc DeleteTimerSubscription(DeleteTimerSubscriptionRequest) returns (DeleteTimerSubscriptionResponse);
+
+  /*
+  Creates a Job and returns its committed Job key.
+
+  Gateway selects a ready partition by round robin using the current PD topology.
+  Broker requires a subscription matching the Job type and tenant before creation.
+  Each create produces an independent Job. Template variables are merged with request
+  variables, with request keys taking precedence. Broker records the matched subscription key;
+  deleting that subscription also removes its associated in-flight Jobs.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobType is blank, or variables is not a valid JSON object
+      - retries is not positive, or priority is negative
+    NOT_FOUND:
+      - no Job subscription matches jobType and the resolved tenant in the selected partition
+    UNAVAILABLE:
+      - no ready partition or current Broker leader is available for dispatch
+  */
+  rpc CreateJob(CreateJobRequest) returns (CreateJobResponse);
+
+  /*
+  Activates eligible Jobs by type across ready partitions and authorized tenants.
+
+  Emits committed activation batches up to maxJobsToActivate across the whole stream.
+  Higher-priority Jobs are selected first within each partition. Long polling ends
+  after a scan finds Jobs or requestTimeout expires; no Jobs means a successful empty stream.
+  The gRPC deadline is independent of requestTimeout.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - type is blank, timeout or maxJobsToActivate is negative, or tenantIds contains a blank ID
+      - adding timeout to Broker processing time exceeds the supported deadline range
+    PERMISSION_DENIED:
+      - tenantIds includes a tenant not authorized for this request
+    FAILED_PRECONDITION:
+      - Worker lease fencing is enabled and the Worker session is missing, stale or revoked
+    RESOURCE_EXHAUSTED:
+      - a Job cannot fit in the activation response record; reduce fetchVariable
+    UNAVAILABLE:
+      - Worker session recovery is incomplete or Gateway is shutting down
+  */
+  rpc ActivateJobs(ActivateJobsRequest) returns (stream ActivateJobsResponse);
+
+  /*
+  Completes a Job and records its supplied result variables.
+
+  The Job must be ACTIVATABLE or ACTIVATED. When Worker lease fencing is enabled,
+  completion requires the matching activation session. Success commits completion
+  and removes the Job from the live Job state.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - the encoded Job key is negative, or variables is not a valid JSON object
+    NOT_FOUND:
+      - the Job is completed, canceled, absent or not visible to the current tenant
+    FAILED_PRECONDITION:
+      - the Job is not in a completable state, or its Worker session is stale or revoked
+    UNAVAILABLE:
+      - Worker session recovery is incomplete or the Job partition cannot be routed
+  */
+  rpc CompleteJob(CompleteJobRequest) returns (CompleteJobResponse);
+
+  /*
+  Fails a Job, merges failure variables and sets its remaining retry count.
+
+  The Job must be ACTIVATABLE or ACTIVATED and satisfy enabled Worker lease fencing.
+  Positive retries make the Job eligible after retryBackOff; zero retries create an
+  incident if none exists. The retry count is supplied explicitly, not decremented automatically.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobKey is not positive, retries or retryBackOff is negative, or variables is not a JSON object
+      - the retry deadline exceeds the supported timestamp range
+    NOT_FOUND:
+      - the Job does not exist or is not visible to the current tenant
+    FAILED_PRECONDITION:
+      - the Job cannot be failed in its current state, or its Worker session is stale or revoked
+    UNAVAILABLE:
+      - Worker session recovery is incomplete or the Job partition cannot be routed
+  */
+  rpc FailJob(FailJobRequest) returns (FailJobResponse);
+
+  /*
+  Sets the remaining retries of an existing Job to a positive value.
+
+  This operation does not require a Worker session. If the Job has an incident,
+  update retries before calling ResolveIncident; this RPC does not resolve it.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobKey or retries is not positive
+    NOT_FOUND:
+      - the Job does not exist or is not visible to the current tenant
+    UNAVAILABLE:
+      - the Job partition cannot be routed
+  */
+  rpc UpdateJobRetries(UpdateJobRetriesRequest) returns (UpdateJobRetriesResponse);
+
+  /*
+  Resets an activated Job's deadline to Broker processing time plus timeout.
+
+  The timeout may shorten or extend the current activation; retries and ownership
+  are preserved. Enabled Worker lease fencing requires the matching activation session.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobKey or timeout is not positive
+      - the resulting deadline exceeds the supported timestamp range
+    NOT_FOUND:
+      - the Job does not exist or is not visible to the current tenant
+    FAILED_PRECONDITION:
+      - the Job is not ACTIVATED with a deadline, or its Worker session is stale or revoked
+    UNAVAILABLE:
+      - Worker session recovery is incomplete or the Job partition cannot be routed
+  */
+  rpc UpdateJobTimeout(UpdateJobTimeoutRequest) returns (UpdateJobTimeoutResponse);
+
+  /*
+  Updates a Job's signed int32 priority without changing its lifecycle or activation.
+
+  Higher values activate first; zero and negative values are supported. This operation
+  does not require a Worker session. Already activated Jobs keep their current lease.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobKey is not positive
+    NOT_FOUND:
+      - the Job does not exist or is not visible to the current tenant
+    UNAVAILABLE:
+      - the Job partition cannot be routed
+  */
+  rpc UpdateJobPriority(UpdateJobPriorityRequest) returns (UpdateJobPriorityResponse);
+
+  /*
+  Returns current Job details and all variables without activating the Job.
+
+  This query does not change retries or renew an activation lease. Only Jobs still
+  present in live state are returned; completed or canceled Jobs are not retained for querying.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - the encoded Job key is negative
+    NOT_FOUND:
+      - the Job is completed, canceled, absent or not visible to the current tenant
+    UNAVAILABLE:
+      - the Job partition cannot be routed
+  */
+  rpc QueryJob(QueryJobRequest) returns (ActivatedJob);
+
+  /*
+  Cancels an existing Job and removes its live state, variables and associated incident.
+
+  Cancellation is a management operation that does not require a Worker session.
+  Repeating cancellation after removal returns NOT_FOUND.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobKey is not positive
+    NOT_FOUND:
+      - the Job is completed, canceled, absent or not visible to the current tenant
+    UNAVAILABLE:
+      - the Job partition cannot be routed
+  */
+  rpc CancelJob(CancelJobRequest) returns (CancelJobResponse);
+
+  /*
+  Returns the current incident associated with a Job key.
+
+  The response contains the incident key to use with ResolveIncident; querying does
+  not resolve the incident or change the Job's retries.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobKey is not positive
+    NOT_FOUND:
+      - the Job has no current incident, or the incident is not visible to the current tenant
+    UNAVAILABLE:
+      - the Job partition cannot be routed
+  */
+  rpc QueryIncident(QueryIncidentRequest) returns (QueryIncidentResponse);
+
+  /*
+  Resolves an incident after its Job's retry count has been restored.
+
+  The associated Job must still exist and have positive retries; use UpdateJobRetries
+  before resolving an incident caused by exhausted retries.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - incidentKey is not positive
+    NOT_FOUND:
+      - the incident does not exist or is not visible to the current tenant
+    FAILED_PRECONDITION:
+      - the associated Job no longer exists or still has no retries
+    UNAVAILABLE:
+      - the incident partition cannot be routed
+  */
+  rpc ResolveIncident(ResolveIncidentRequest) returns (ResolveIncidentResponse);
+
+  /*
+  Merges variables into an existing Job and acknowledges the committed update.
+
+  Supplied top-level variable names replace their stored values; other variables
+  remain unchanged. This management operation does not require a Worker session.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - jobKey is not positive, or variables is not a valid JSON object
+    NOT_FOUND:
+      - the Job does not exist or is not visible to the current tenant
+    UNAVAILABLE:
+      - the Job partition cannot be routed
+  */
+  rpc SetVariables(SetVariablesRequest) returns (SetVariablesResponse);
+}

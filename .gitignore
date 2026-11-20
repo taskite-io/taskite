@@ -1,0 +1,43 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/*
+!.idea/codeStyles
+!.idea/externalDependencies.xml
+!.idea/google-java-format.xml
+!.idea/saveactions_settings.xml
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+output
+*.log*
+
+### Go ###
+clients/go/.tools/
+clients/go/bin/
+
+### Console ###
+webapp/client/node/
+webapp/client/node_modules/
+webapp/client/.env.local
+webapp/client/.env.*.local
+webapp/client/playwright-report/
+webapp/client/test-results/

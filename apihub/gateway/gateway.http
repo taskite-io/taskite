@@ -1,0 +1,213 @@
+### 创建普通任务订阅（只有 jobType 必填；同集群、租户、jobType 重复创建返回同一 key）
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/CreateJobSubscription
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "name": "payment",
+  "jobType": "payment",
+  "variables": "{\"amount\":100}",
+  "retries": 3,
+  "priority": 50
+}
+
+### 创建独立 cycle 定时订阅（payment、audit 须已在当前集群/租户完成普通订阅创建）
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/CreateTimerSubscription
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "name": "scheduled-payment",
+  "type": "CYCLE",
+  "expression": "R/PT1M",
+  "jobTypes": ["payment", "audit"],
+  "variables": "{\"amount\":100}"
+}
+
+### 创建六字段 cron 定时订阅（report 须已完成普通订阅创建）
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/CreateTimerSubscription
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "name": "daily-report",
+  "type": "CRON",
+  "expression": "0 0 9 * * *",
+  "jobTypes": ["report"]
+}
+
+### 只触发一次的 duration 定时订阅（notification 须已完成普通订阅创建）
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/CreateTimerSubscription
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "name": "notification",
+  "type": "DURATION",
+  "expression": "PT30S",
+  "jobTypes": ["notification"],
+  "variables": "{\"recipient\":\"example\"}"
+}
+
+### 删除定时订阅（停止未来触发，已创建任务继续独立执行）
+@timerSubscriptionKey = 9007199254741035
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/DeleteTimerSubscription
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "key": "{{timerSubscriptionKey}}"
+}
+
+### 直接创建普通任务（需要匹配订阅，变量与模板合并，同名 key 使用请求值）
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/CreateJob
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobType": "payment",
+  "variables": "{\"orderId\":42,\"amount\":100}"
+}
+
+### 删除普通任务订阅
+@subscriptionKey = 9007199254741034
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/DeleteJobSubscription
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "key": "{{subscriptionKey}}"
+}
+
+### 按类型激活 Jobs
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/ActivateJobs
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "type": "payment",
+  "worker": "payment-worker",
+  "timeout": "30000",
+  "maxJobsToActivate": 10,
+  "fetchVariable": [
+    "orderId",
+    "amount"
+  ],
+  "requestTimeout": "10000",
+  "tenantIds": []
+}
+
+### 按类型激活 Jobs（查询所有变量）
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/ActivateJobs
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "type": "payment",
+  "worker": "payment-worker",
+  "timeout": "30000",
+  "maxJobsToActivate": 10,
+  "requestTimeout": "10000",
+  "tenantIds": []
+}
+
+### 查询 Job
+@jobKey = 9007199254741041
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/QueryJob
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}"
+}
+
+### 更新已激活 Job 的超时时间
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/UpdateJobTimeout
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}",
+  "timeout": "60000"
+}
+
+### 更新 Job 优先级
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/UpdateJobPriority
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}",
+  "priority": 10
+}
+
+### 设置任务变量
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/SetVariables
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}",
+  "variables": "{\"a\":true}"
+}
+
+### 标记 Job 失败
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/FailJob
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}",
+  "retries": 0,
+  "errorMessage": "temporary failure",
+  "retryBackOff": "1000",
+  "variables": "{\"attempt\":2}"
+}
+
+### 取消任务
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/CancelJob
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}"
+}
+
+### 更新任务剩余重试次数
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/UpdateJobRetries
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}",
+  "retries": 3
+}
+
+### 按任务 Key 查询 Incident
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/QueryIncident
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}"
+}
+
+### 解决 Incident
+@incidentKey = 27021597764223083
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/ResolveIncident
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "incidentKey": "{{incidentKey}}"
+}
+
+### 完成任务
+
+GRPC {{GATEWAY_ADDRESS}}/gateway_protocol.Gateway/CompleteJob
+Content-Type: application/json
+x-cluster-id: {{BROKER_CLUSTER}}
+
+{
+  "jobKey": "{{jobKey}}"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Taskite Console",
+  "short_name": "Taskite",
+  "start_url": "/console/",
+  "scope": "/console/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4657e8",
+  "icons": [
+    {
+      "src": "android-chrome-512x512.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "android-chrome-maskable-512x512.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+${AnsiColor.BRIGHT_BLUE}${AnsiStyle.BOLD}  _____         _    _ _
+ |_   _|_ _ ___| | _(_) |_ ___
+   | |/ _` / __| |/ / | __/ _ \
+   | | (_| \__ \   <| | ||  __/
+   |_|\__,_|___/_|\_\_|\__\___|
+
+${AnsiStyle.NORMAL}${AnsiColor.BRIGHT_CYAN}  DISTRIBUTED TASKS. RELIABLE EXECUTION.
+
+${AnsiColor.BRIGHT_BLACK}  Taskite @project.version@
+  Powered by Spring Boot ${spring-boot.formatted-version}
+${AnsiColor.DEFAULT}

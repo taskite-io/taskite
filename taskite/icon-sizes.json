@@ -1,0 +1,591 @@
+{
+  "source": "taskite-icon.svg",
+  "format": "svg",
+  "note": "Intrinsic dimensions are defaults; every icon remains scalable vector artwork.",
+  "assets": [
+    {
+      "file": "taskite-icon.svg",
+      "intrinsic_size": [
+        512,
+        512
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Master vector icon"
+    },
+    {
+      "file": "favicon.svg",
+      "intrinsic_size": [
+        512,
+        512
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Scalable browser tab favicon"
+    },
+    {
+      "file": "favicon-16x16.svg",
+      "intrinsic_size": [
+        16,
+        16
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Browser tab favicon"
+    },
+    {
+      "file": "favicon-32x32.svg",
+      "intrinsic_size": [
+        32,
+        32
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Browser tab favicon"
+    },
+    {
+      "file": "favicon-48x48.svg",
+      "intrinsic_size": [
+        48,
+        48
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Browser tab favicon"
+    },
+    {
+      "file": "web/icon-64.svg",
+      "intrinsic_size": [
+        64,
+        64
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Web UI and website icon"
+    },
+    {
+      "file": "web/icon-128.svg",
+      "intrinsic_size": [
+        128,
+        128
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Web UI and website icon"
+    },
+    {
+      "file": "web/icon-256.svg",
+      "intrinsic_size": [
+        256,
+        256
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Web UI and website icon"
+    },
+    {
+      "file": "web/icon-512.svg",
+      "intrinsic_size": [
+        512,
+        512
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Web UI and website icon"
+    },
+    {
+      "file": "web/icon-1024.svg",
+      "intrinsic_size": [
+        1024,
+        1024
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Web UI and website icon"
+    },
+    {
+      "file": "apple-touch-icon.svg",
+      "intrinsic_size": [
+        180,
+        180
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iPhone/iPad home-screen icon vector source"
+    },
+    {
+      "file": "iphone/apple-touch-icon.svg",
+      "intrinsic_size": [
+        180,
+        180
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iPhone/iPad home-screen icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-20.svg",
+      "intrinsic_size": [
+        20,
+        20
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-29.svg",
+      "intrinsic_size": [
+        29,
+        29
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-40.svg",
+      "intrinsic_size": [
+        40,
+        40
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-58.svg",
+      "intrinsic_size": [
+        58,
+        58
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-60.svg",
+      "intrinsic_size": [
+        60,
+        60
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-76.svg",
+      "intrinsic_size": [
+        76,
+        76
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-80.svg",
+      "intrinsic_size": [
+        80,
+        80
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-87.svg",
+      "intrinsic_size": [
+        87,
+        87
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-120.svg",
+      "intrinsic_size": [
+        120,
+        120
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-152.svg",
+      "intrinsic_size": [
+        152,
+        152
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-167.svg",
+      "intrinsic_size": [
+        167,
+        167
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-180.svg",
+      "intrinsic_size": [
+        180,
+        180
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "iphone/app-icons/icon-1024.svg",
+      "intrinsic_size": [
+        1024,
+        1024
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "iOS application icon vector source"
+    },
+    {
+      "file": "android-chrome-192x192.svg",
+      "intrinsic_size": [
+        192,
+        192
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "PWA installation icon"
+    },
+    {
+      "file": "android-chrome-maskable-192x192.svg",
+      "intrinsic_size": [
+        192,
+        192
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 0.9,
+      "purpose": "PWA maskable installation icon"
+    },
+    {
+      "file": "android-chrome-512x512.svg",
+      "intrinsic_size": [
+        512,
+        512
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "PWA installation icon"
+    },
+    {
+      "file": "android-chrome-maskable-512x512.svg",
+      "intrinsic_size": [
+        512,
+        512
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 0.9,
+      "purpose": "PWA maskable installation icon"
+    },
+    {
+      "file": "android/mipmap-mdpi/ic_launcher.svg",
+      "intrinsic_size": [
+        48,
+        48
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "Android launcher vector source"
+    },
+    {
+      "file": "android/mipmap-mdpi/ic_launcher_round.svg",
+      "intrinsic_size": [
+        48,
+        48
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white circle",
+      "canvas_scale": 1.0,
+      "purpose": "Android round launcher vector source"
+    },
+    {
+      "file": "android/drawable-mdpi/ic_launcher_foreground.svg",
+      "intrinsic_size": [
+        108,
+        108
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 0.75,
+      "purpose": "Android adaptive foreground vector source; 108dp canvas"
+    },
+    {
+      "file": "android/mipmap-hdpi/ic_launcher.svg",
+      "intrinsic_size": [
+        72,
+        72
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "Android launcher vector source"
+    },
+    {
+      "file": "android/mipmap-hdpi/ic_launcher_round.svg",
+      "intrinsic_size": [
+        72,
+        72
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white circle",
+      "canvas_scale": 1.0,
+      "purpose": "Android round launcher vector source"
+    },
+    {
+      "file": "android/drawable-hdpi/ic_launcher_foreground.svg",
+      "intrinsic_size": [
+        162,
+        162
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 0.75,
+      "purpose": "Android adaptive foreground vector source; 108dp canvas"
+    },
+    {
+      "file": "android/mipmap-xhdpi/ic_launcher.svg",
+      "intrinsic_size": [
+        96,
+        96
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "Android launcher vector source"
+    },
+    {
+      "file": "android/mipmap-xhdpi/ic_launcher_round.svg",
+      "intrinsic_size": [
+        96,
+        96
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white circle",
+      "canvas_scale": 1.0,
+      "purpose": "Android round launcher vector source"
+    },
+    {
+      "file": "android/drawable-xhdpi/ic_launcher_foreground.svg",
+      "intrinsic_size": [
+        216,
+        216
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 0.75,
+      "purpose": "Android adaptive foreground vector source; 108dp canvas"
+    },
+    {
+      "file": "android/mipmap-xxhdpi/ic_launcher.svg",
+      "intrinsic_size": [
+        144,
+        144
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "Android launcher vector source"
+    },
+    {
+      "file": "android/mipmap-xxhdpi/ic_launcher_round.svg",
+      "intrinsic_size": [
+        144,
+        144
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white circle",
+      "canvas_scale": 1.0,
+      "purpose": "Android round launcher vector source"
+    },
+    {
+      "file": "android/drawable-xxhdpi/ic_launcher_foreground.svg",
+      "intrinsic_size": [
+        324,
+        324
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 0.75,
+      "purpose": "Android adaptive foreground vector source; 108dp canvas"
+    },
+    {
+      "file": "android/mipmap-xxxhdpi/ic_launcher.svg",
+      "intrinsic_size": [
+        192,
+        192
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "Android launcher vector source"
+    },
+    {
+      "file": "android/mipmap-xxxhdpi/ic_launcher_round.svg",
+      "intrinsic_size": [
+        192,
+        192
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white circle",
+      "canvas_scale": 1.0,
+      "purpose": "Android round launcher vector source"
+    },
+    {
+      "file": "android/drawable-xxxhdpi/ic_launcher_foreground.svg",
+      "intrinsic_size": [
+        432,
+        432
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 0.75,
+      "purpose": "Android adaptive foreground vector source; 108dp canvas"
+    },
+    {
+      "file": "icon/core/taskite-icon.svg",
+      "intrinsic_size": [
+        320,
+        320
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Taskite distributed-task icon"
+    },
+    {
+      "file": "icon/web/favicon.svg",
+      "intrinsic_size": [
+        64,
+        64
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Taskite distributed-task icon"
+    },
+    {
+      "file": "icon/docs/icon.svg",
+      "intrinsic_size": [
+        256,
+        256
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 1.0,
+      "purpose": "Taskite distributed-task icon"
+    },
+    {
+      "file": "icon/desktop/app-icon.svg",
+      "intrinsic_size": [
+        512,
+        512
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "rounded-white",
+      "canvas_scale": 1.0,
+      "purpose": "Taskite distributed-task icon"
+    },
+    {
+      "file": "icon/mobile/app-icon.svg",
+      "intrinsic_size": [
+        1024,
+        1024
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "Taskite distributed-task icon"
+    },
+    {
+      "file": "icon/android/adaptive-foreground.svg",
+      "intrinsic_size": [
+        1080,
+        1080
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "transparent",
+      "canvas_scale": 0.75,
+      "purpose": "Taskite distributed-task icon"
+    },
+    {
+      "file": "icon/terminal/cli-monochrome.svg",
+      "intrinsic_size": [
+        128,
+        128
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "monochrome",
+      "canvas_scale": 1.0,
+      "purpose": "Taskite distributed-task icon"
+    },
+    {
+      "file": "icon/android/adaptive-background.svg",
+      "intrinsic_size": [
+        1080,
+        1080
+      ],
+      "viewBox": "0 0 512 512",
+      "background": "white",
+      "canvas_scale": 1.0,
+      "purpose": "Taskite distributed-task icon"
+    }
+  ],
+  "slogan": "Distributed tasks. Reliable execution.",
+  "raster_assets": [
+    {
+      "file": "icon/web/github-organization.png",
+      "intrinsic_size": [
+        512,
+        512
+      ],
+      "format": "png",
+      "purpose": "GitHub organization avatar"
+    }
+  ]
+}

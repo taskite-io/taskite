@@ -1,0 +1,2239 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 94,
+      "type": "row",
+      "title": "Business Availability During Migration",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 70}
+    },
+    {
+      "id": 95,
+      "type": "timeseries",
+      "title": "Serving Partitions",
+      "description": "Actual ready routes. Membership-change progress does not remove a healthy Leader.",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 71},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "max by (cluster) (taskite_pd_broker_partition_change_serving_partitions{pd_node=~\"$pd_node\",cluster=~\"$cluster\"} and on(pd_node) (taskite_pd_raft_role == 3))", "legendFormat": "{{cluster}} ready"},
+        {"refId": "B", "expr": "min_over_time((max by (cluster) (taskite_pd_broker_partition_change_serving_partitions{pd_node=~\"$pd_node\",cluster=~\"$cluster\"} and on(pd_node) (taskite_pd_raft_role == 3)))[5m:])", "legendFormat": "{{cluster}} minimum 5m"}
+      ],
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 96,
+      "type": "timeseries",
+      "title": "Queued and Executing Migrations",
+      "description": "Reservations come from committed pending owners and survive PD leadership changes.",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 71},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "expr": "max by (cluster) (taskite_pd_broker_partition_change_queued_partitions{pd_node=~\"$pd_node\",cluster=~\"$cluster\"} and on(pd_node) (taskite_pd_raft_role == 3))", "legendFormat": "{{cluster}} queued"},
+        {"refId": "B", "expr": "max by (cluster) (taskite_pd_broker_partition_change_executing_partitions{pd_node=~\"$pd_node\",cluster=~\"$cluster\"} and on(pd_node) (taskite_pd_raft_role == 3))", "legendFormat": "{{cluster}} executing"}
+      ],
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 97,
+      "type": "timeseries",
+      "title": "Reserved Learner Slots by Broker",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 78},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (cluster, broker) (taskite_pd_broker_partition_change_reserved_learner_slots{pd_node=~\"$pd_node\",cluster=~\"$cluster\"} and on(pd_node) (taskite_pd_raft_role == 3))", "legendFormat": "{{cluster}} / {{broker}}"}],
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 98,
+      "type": "timeseries",
+      "title": "Learner Replication Lag",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 78},
+      "fieldConfig": {"defaults": {"unit": "short", "min": 0}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (cluster, partition, broker) (taskite_pd_broker_partition_change_learner_lag{pd_node=~\"$pd_node\",cluster=~\"$cluster\"} and on(pd_node) (taskite_pd_raft_role == 3))", "legendFormat": "{{cluster}} / p{{partition}} / {{broker}}"}],
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 17,
+      "panels": [],
+      "title": "Placement Driver",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Healthy when the selected placement-driver nodes observe an elected leader.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "Unhealthy"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "Healthy"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "min(taskite_pd_cluster_health{pd_node=~\"$pd_node\"})",
+          "instant": true,
+          "legendFormat": "PD Cluster",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "PD Cluster Health",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "The single PD Raft partition must have exactly one elected leader. Zero means unavailable; more than one indicates inconsistent observations.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "short",
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "No Leader"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "1 Leader"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 7
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "count(taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3) or vector(0)",
+          "instant": true,
+          "legendFormat": "Elected Leaders",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "PD Leader Election",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Number of Broker clusters currently managed by the placement-driver.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 7
+      },
+      "id": 26,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max(taskite_pd_managed_clusters{pd_node=~\"$pd_node\"})",
+          "instant": true,
+          "legendFormat": "Clusters",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Managed Broker Clusters",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Configured partition count for every managed Broker cluster.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 7
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (cluster) (taskite_pd_cluster_partitions{pd_node=~\"$pd_node\",cluster=~\"$cluster\"})",
+          "instant": true,
+          "legendFormat": "{{cluster}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Configured Partitions by Cluster",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Number of committed one-way job subscription mirror relations, deduplicated across placement-driver scrape targets.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 7
+      },
+      "id": 71,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max(taskite_pd_job_subscription_mirror_relations{pd_node=~\"$pd_node\"}) or vector(0)",
+          "instant": true,
+          "legendFormat": "Mirror Relations",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Job Subscription Mirror Relations",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Current role of each placement-driver node in the single PD Raft partition.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "mode": "basic",
+              "type": "color-background"
+            },
+            "inspect": false
+          },
+          "links": [],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "super-light-red",
+                  "index": 0,
+                  "text": "Unknown"
+                },
+                "1": {
+                  "color": "super-light-orange",
+                  "index": 1,
+                  "text": "Follower"
+                },
+                "2": {
+                  "color": "super-light-purple",
+                  "index": 2,
+                  "text": "Candidate"
+                },
+                "3": {
+                  "color": "light-green",
+                  "index": 3,
+                  "text": "Leader"
+                },
+                "4": {
+                  "color": "light-blue",
+                  "index": 4,
+                  "text": "Learner"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PD Node"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 22,
+      "interval": "1s",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max by (pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"})",
+          "format": "time_series",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{pd_node}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Partition Leader",
+      "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Metric": 0,
+              "Value": 1
+            },
+            "renameByName": {
+              "Metric": "PD Node",
+              "Value": "Role"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Most recent registration or renewal reported by each Broker, read from the current placement-driver Leader.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "DRAINING": {
+                        "color": "orange",
+                        "index": 1,
+                        "text": "DRAINING"
+                      },
+                      "OFFLINE": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "OFFLINE"
+                      },
+                      "ONLINE": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "ONLINE"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last renewal"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 51,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "max by (pd_node, cluster, broker, status, host, command_port, raft_port, version) (taskite_pd_broker_last_renewal_at_seconds{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\"} and on(pd_node) (taskite_pd_raft_role == 3)) * 1000",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Registered Brokers",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "pd_node": true
+            },
+            "indexByName": {
+              "cluster": 0,
+              "broker": 1,
+              "status": 2,
+              "host": 3,
+              "command_port": 4,
+              "raft_port": 5,
+              "version": 6,
+              "Value": 7
+            },
+            "renameByName": {
+              "Value": "last renewal",
+              "command_port": "command port",
+              "raft_port": "raft port"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "id": 80,
+      "title": "Broker Election & Restart Readiness",
+      "type": "row",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 21
+      },
+      "id": 81,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_leader_missing_seconds{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-leader_missing_seconds-{{partition}}",
+          "range": true
+        }
+      ],
+      "title": "Leader Missing Duration",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 21
+      },
+      "id": 82,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_eligible_voters{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-eligible_voters-{{partition}}",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_available_voters{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-available_voters-{{partition}}",
+          "range": true
+        }
+      ],
+      "title": "Available / Eligible Voters",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 21
+      },
+      "id": 83,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_priority_mismatch{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-{{broker}}-priority_mismatch-{{partition}}",
+          "range": true
+        }
+      ],
+      "title": "Priority Mismatch",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 21
+      },
+      "id": 84,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_service_ready{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-{{broker}}-service_ready-{{partition}}",
+          "range": true
+        }
+      ],
+      "title": "Replica Service Readiness",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 29
+      },
+      "id": 85,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_failure_reason{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-failure_reason-{{partition}}-{{reason}}",
+          "range": true
+        }
+      ],
+      "title": "Election / Recovery Reason",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 29
+      },
+      "id": 86,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_local_priority{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-{{broker}}-local_priority-{{partition}}",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_desired_priority{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-{{broker}}-desired_priority-{{partition}}",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_target_priority{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-{{broker}}-target_priority-{{partition}}",
+          "range": true
+        }
+      ],
+      "title": "Local / Desired / Target Priority",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 29
+      },
+      "id": 87,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_observation_age_seconds{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-{{broker}}-observation_age_seconds-{{partition}}",
+          "range": true
+        }
+      ],
+      "title": "Observation Age",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Applied Raft state observed by the PD Leader only; initialization and stale observations are not ready.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 29
+      },
+      "id": 88,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (cluster, partition, broker, reason) (taskite_pd_partition_election_configuration_index{cluster=~\"${cluster:regex}\",pd_node=~\"$pd_node\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "legendFormat": "{{cluster}}-{{broker}}-configuration_index-{{partition}}",
+          "range": true
+        }
+      ],
+      "title": "Applied Configuration Index",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 42,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Overall progress for PD and Broker topology changes started within the selected time range, weighted as completed low-level operations divided by all operations across change types.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "decimals": 0,
+              "fieldMinMax": false,
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.5
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byType",
+                  "options": "number"
+                },
+                "properties": [
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "max",
+                    "value": 1
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 29
+          },
+          "id": 28,
+          "options": {
+            "displayMode": "basic",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "namePlacement": "top",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": false,
+            "sizing": "auto",
+            "text": {
+              "titleSize": 12,
+              "valueSize": 14
+            },
+            "valueMode": "color"
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "(((sum by (change_id) (max by (change_id, change_type, operation_type, status) (taskite_pd_member_change_operations{pd_node=~\"$pd_node\",status=\"completed\"}))) or on (change_id) (0 * sum by (change_id) (max by (change_id, change_type, operation_type, status) (taskite_pd_member_change_operations{pd_node=~\"$pd_node\"})))) / sum by (change_id) (max by (change_id, change_type, operation_type, status) (taskite_pd_member_change_operations{pd_node=~\"$pd_node\"}))) and on (change_id) ((max by (change_id) (taskite_pd_member_change_started_at_seconds{pd_node=~\"$pd_node\"}) >= $__from / 1000) and (max by (change_id) (taskite_pd_member_change_started_at_seconds{pd_node=~\"$pd_node\"}) <= $__to / 1000))",
+              "instant": true,
+              "legendFormat": "PD · {{change_id}}",
+              "range": false,
+              "refId": "A"
+            },
+            {
+              "editorMode": "code",
+              "expr": "(((sum by (cluster, change_id) (max by (cluster, change_id, change_type, operation_type, status) (taskite_pd_broker_change_operations{pd_node=~\"$pd_node\",cluster=~\"$cluster\",status=\"completed\"}))) or on (cluster, change_id) (0 * sum by (cluster, change_id) (max by (cluster, change_id, change_type, operation_type, status) (taskite_pd_broker_change_operations{pd_node=~\"$pd_node\",cluster=~\"$cluster\"})))) / sum by (cluster, change_id) (max by (cluster, change_id, change_type, operation_type, status) (taskite_pd_broker_change_operations{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}))) and on (cluster, change_id) ((max by (cluster, change_id) (taskite_pd_broker_change_started_at_seconds{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}) >= $__from / 1000) and (max by (cluster, change_id) (taskite_pd_broker_change_started_at_seconds{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}) <= $__to / 1000))",
+              "instant": true,
+              "legendFormat": "{{cluster}} · {{change_id}}",
+              "range": false,
+              "refId": "B"
+            }
+          ],
+          "title": "Change History",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Failed or cancelled low-level operations grouped by retained change execution.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": true,
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Time"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Failed Count"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 21
+          },
+          "id": 29,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": true
+            },
+            "showHeader": true
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "label_replace(max by (change_id, change_type, operation_type, status) (taskite_pd_member_change_operations{pd_node=~\"$pd_node\",status=~\"failed|cancelled\"}), \"cluster\", \"placement-driver\", \"change_id\", \".*\") or max by (cluster, change_id, change_type, operation_type, status) (taskite_pd_broker_change_operations{pd_node=~\"$pd_node\",cluster=~\"$cluster\",status=~\"failed|cancelled\"})",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "title": "Failed Change Operations",
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {}
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 21
+          },
+          "id": 35,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "(sum(max by (change_id, change_type, operation_type, status) (taskite_pd_member_change_operations{pd_node=~\"$pd_node\",status!=\"completed\"}) and on (change_id, change_type) (max by (change_id, change_type) (taskite_pd_member_change_active{pd_node=~\"$pd_node\"}) == 1)) or vector(0)) + (sum(max by (cluster, change_id, change_type, operation_type, status) (taskite_pd_broker_change_operations{pd_node=~\"$pd_node\",cluster=~\"$cluster\",status!=\"completed\"}) and on (cluster, change_id, change_type) (max by (cluster, change_id, change_type) (taskite_pd_broker_change_active{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}) == 1)) or vector(0))",
+              "instant": false,
+              "legendFormat": "Pending",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "(sum(max by (change_id, change_type, operation_type, status) (taskite_pd_member_change_operations{pd_node=~\"$pd_node\",status=\"completed\"}) and on (change_id, change_type) (max by (change_id, change_type) (taskite_pd_member_change_active{pd_node=~\"$pd_node\"}) == 1)) or vector(0)) + (sum(max by (cluster, change_id, change_type, operation_type, status) (taskite_pd_broker_change_operations{pd_node=~\"$pd_node\",cluster=~\"$cluster\",status=\"completed\"}) and on (cluster, change_id, change_type) (max by (cluster, change_id, change_type) (taskite_pd_broker_change_active{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}) == 1)) or vector(0))",
+              "instant": false,
+              "legendFormat": "Completed",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Topology Change Operations",
+          "type": "timeseries",
+          "description": "Number of completed and pending operations for the active topology change."
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Completed low-level operations for changes started within the selected dashboard time range.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": true,
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Time"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Value"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Completed Count"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 29
+          },
+          "id": 48,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": true
+            },
+            "showHeader": true
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "label_replace(max by (change_id, change_type, operation_type, status) (taskite_pd_member_change_operations{pd_node=~\"$pd_node\",status=\"completed\"}) and on (change_id) ((max by (change_id) (taskite_pd_member_change_started_at_seconds{pd_node=~\"$pd_node\"}) >= $__from / 1000) and (max by (change_id) (taskite_pd_member_change_started_at_seconds{pd_node=~\"$pd_node\"}) <= $__to / 1000)), \"cluster\", \"placement-driver\", \"change_id\", \".*\") or (max by (cluster, change_id, change_type, operation_type, status) (taskite_pd_broker_change_operations{pd_node=~\"$pd_node\",cluster=~\"$cluster\",status=\"completed\"}) and on (cluster, change_id) ((max by (cluster, change_id) (taskite_pd_broker_change_started_at_seconds{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}) >= $__from / 1000) and (max by (cluster, change_id) (taskite_pd_broker_change_started_at_seconds{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}) <= $__to / 1000)))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "title": "Completed Change Operations",
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {}
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Job subscription distribution targets grouped by target cluster and completion status. A distributing target still has at least one pending partition.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "decimals": 0,
+              "mappings": [],
+              "min": 0,
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 37
+          },
+          "id": 72,
+          "options": {
+            "displayMode": "basic",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "namePlacement": "top",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": false,
+            "sizing": "auto",
+            "text": {
+              "titleSize": 12,
+              "valueSize": 14
+            },
+            "valueMode": "color"
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "max by (cluster, status) (taskite_pd_job_subscription_distribution_targets{pd_node=~\"$pd_node\",cluster=~\"$cluster\"})",
+              "instant": true,
+              "legendFormat": "{{cluster}} · {{status}}",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "title": "Job Subscription Distribution Targets",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Current pending job subscription distribution partitions by target cluster. A sustained non-zero value on a Passive cluster indicates mirror delivery lag.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 37
+          },
+          "id": 73,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "max by (cluster) (taskite_pd_job_subscription_distribution_pending_partitions{pd_node=~\"$pd_node\",cluster=~\"$cluster\"})",
+              "legendFormat": "{{cluster}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Pending Job Subscription Partitions",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Cluster Changes",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 63,
+      "panels": [],
+      "title": "Raft Snapshots",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Encoded Raft log bytes not yet covered by the latest successful snapshot.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 39
+      },
+      "id": 64,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (partition) (taskite_snapshot_uncovered_log_bytes{cluster=\"placement-driver\",partition=\"1\"})",
+          "legendFormat": "p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Uncovered Log Bytes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Encoded bytes currently retained by the local Raft log on the partition leader.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 39
+      },
+      "id": 65,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (partition) (taskite_raft_log_retained_bytes{cluster=\"placement-driver\",partition=\"1\"})",
+          "legendFormat": "p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Retained Raft Log Bytes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Leader snapshot triggers grouped by size, interval, manual, and retry reason.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 39
+      },
+      "id": 66,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (partition, reason) (rate(taskite_snapshot_trigger_total{cluster=\"placement-driver\",partition=\"1\"}[$__rate_interval]))",
+          "legendFormat": "p{{partition}} · {{reason}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Triggers / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "p95 end-to-end snapshot attempt latency grouped by result.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 39
+      },
+      "id": 67,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, partition, result) (rate(taskite_snapshot_duration_seconds_bucket{cluster=\"placement-driver\",partition=\"1\"}[$__rate_interval])))",
+          "legendFormat": "p{{partition}} · {{result}} · p95",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Attempt Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Physical size of the latest successfully persisted RocksDB checkpoint.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 47
+      },
+      "id": 68,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (partition) (taskite_snapshot_size_bytes{cluster=\"placement-driver\",partition=\"1\"})",
+          "legendFormat": "p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Size",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Completed snapshot attempts grouped by success, failure, and skipped result.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 47
+      },
+      "id": 69,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (partition, result) (rate(taskite_snapshot_attempt_total{cluster=\"placement-driver\",partition=\"1\"}[$__rate_interval]))",
+          "legendFormat": "p{{partition}} · {{result}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Attempts / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Snapshot retries scheduled after failed or temporarily skipped attempts.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 47
+      },
+      "id": 70,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (partition) (rate(taskite_snapshot_retry_total{cluster=\"placement-driver\",partition=\"1\"}[$__rate_interval]))",
+          "legendFormat": "p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Retries / s",
+      "type": "timeseries"
+    },
+    {
+      "id": 89, "type": "row", "title": "Partition Plan Recovery",
+      "collapsed": false, "panels": [],
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 55}
+    },
+    {
+      "id": 90, "type": "timeseries", "title": "Partition Execution Generation",
+      "description": "Durable generation of the current pending execution. Old generations cannot mutate a successor configuration.",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 56},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (cluster, partition) (taskite_pd_broker_partition_change_generation{pd_node=~\"$pd_node\",cluster=~\"$cluster\"})", "legendFormat": "{{cluster}} / {{partition}}"}],
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}}
+    },
+    {
+      "id": 91, "type": "timeseries", "title": "Execution Authority Applied Index",
+      "description": "Applied Raft index that certifies the current execution authority.",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 56},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (cluster, partition) (taskite_pd_broker_partition_change_authority_index{pd_node=~\"$pd_node\",cluster=~\"$cluster\"})", "legendFormat": "{{cluster}} / {{partition}}"}],
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}}
+    },
+    {
+      "id": 92, "type": "timeseries", "title": "Partition Plan Blocked Duration",
+      "description": "Seconds since the durable blocked reason was recorded; retries do not extend this timestamp.",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 63},
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (cluster, partition) (taskite_pd_broker_partition_change_blocked_seconds{pd_node=~\"$pd_node\",cluster=~\"$cluster\"})", "legendFormat": "{{cluster}} / {{partition}}"}],
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}}
+    },
+    {
+      "id": 93, "type": "table", "title": "Partition Plan Blocked Reasons",
+      "description": "NO_QUORUM requires explicit recovery; it never authorizes automatic RESET_PEERS.",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 63},
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "max by (cluster, partition, reason) (taskite_pd_broker_partition_change_blocked_reason{pd_node=~\"$pd_node\",cluster=~\"$cluster\"}) > 0", "instant": true, "format": "table"}],
+      "options": {"showHeader": true}
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "taskite",
+    "placement-driver",
+    "prometheus"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(taskite_pd_raft_role, pd_node)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "PD Node",
+        "multi": true,
+        "name": "pd_node",
+        "options": [],
+        "query": {
+          "query": "label_values(taskite_pd_raft_role, pd_node)",
+          "refId": "PrometheusVariableQueryEditor-PDNode"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "demo",
+          "value": "demo"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values({__name__=~\"taskite_pd_broker_status|taskite_pd_cluster_partitions|taskite_pd_broker_change_operations|taskite_pd_job_subscription_distribution_targets|taskite_pd_partition_election_.*\"}, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cluster",
+        "multi": true,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "label_values({__name__=~\"taskite_pd_broker_status|taskite_pd_cluster_partitions|taskite_pd_broker_change_operations|taskite_pd_job_subscription_distribution_targets|taskite_pd_partition_election_.*\"}, cluster)",
+          "refId": "PrometheusVariableQueryEditor-Cluster"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(taskite_pd_broker_status{cluster=~\"$cluster\"}, broker)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Broker",
+        "multi": true,
+        "name": "broker",
+        "options": [],
+        "query": {
+          "query": "label_values(taskite_pd_broker_status{cluster=~\"$cluster\"}, broker)",
+          "refId": "PrometheusVariableQueryEditor-Broker"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Taskite Placement Driver",
+  "uid": "taskite-placement-driver",
+  "version": 3,
+  "weekStart": ""
+}

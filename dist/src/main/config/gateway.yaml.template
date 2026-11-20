@@ -1,0 +1,51 @@
+# Gateway configuration file.
+#
+# To activate this file, copy or rename it to application.yaml and place it in a Spring
+# configuration location, for example ./config/application.yaml.
+#
+# Configuration precedence:
+# environment variables > external file > packaged defaults.
+
+# Complete CLI properties > named environment variables > external YAML > packaged defaults.
+taskite:
+  gateway:
+    network:
+      # Environment: TASKITE_GATEWAY_NETWORK_HOST
+      host: ${TASKITE_GATEWAY_NETWORK_HOST:0.0.0.0}
+      # Environment: TASKITE_GATEWAY_NETWORK_PORT
+      port: ${TASKITE_GATEWAY_NETWORK_PORT:26500}
+      # Environment: TASKITE_GATEWAY_NETWORK_MIN_KEEP_ALIVE_INTERVAL
+      min-keep-alive-interval: ${TASKITE_GATEWAY_NETWORK_MIN_KEEP_ALIVE_INTERVAL:30s}
+    placement-driver:
+      # Environment: TASKITE_GATEWAY_PLACEMENT_DRIVER_ENDPOINTS
+      endpoints: ${TASKITE_GATEWAY_PLACEMENT_DRIVER_ENDPOINTS:127.0.0.1:26501}
+      # Timeout for each Gateway -> PD RPC.
+      request-timeout: ${TASKITE_GATEWAY_PLACEMENT_DRIVER_REQUEST_TIMEOUT:10s}
+      # Environment: TASKITE_GATEWAY_PLACEMENT_DRIVER_TOPOLOGY_REFRESH_INTERVAL
+      topology-refresh-interval: ${TASKITE_GATEWAY_PLACEMENT_DRIVER_TOPOLOGY_REFRESH_INTERVAL:5s}
+    broker:
+      # Sets the timeout for each Gateway -> Broker gRPC request attempt. Timed-out commands are not
+      # retried because their commit outcome may be unknown. It does not configure the
+      # Client -> Gateway or Gateway -> PD timeout.
+      # Environment: TASKITE_GATEWAY_BROKER_REQUEST_TIMEOUT
+      request-timeout: ${TASKITE_GATEWAY_BROKER_REQUEST_TIMEOUT:30s}
+      # Sets the maximum retries for refreshable routing/transport failures.
+      # Environment: TASKITE_GATEWAY_BROKER_MAX_RETRIES
+      max-retries: ${TASKITE_GATEWAY_BROKER_MAX_RETRIES:3}
+    threads:
+      # Maximum number of management threads used to execute request actors and cluster coordination.
+      # Every request owns one actor; different requests run concurrently up to this thread limit.
+      # Environment: TASKITE_GATEWAY_THREADS_MANAGEMENT
+      management: ${TASKITE_GATEWAY_THREADS_MANAGEMENT:20}
+    multi-tenancy:
+      # Environment: TASKITE_GATEWAY_MULTI_TENANCY_ENABLED
+      enabled: ${TASKITE_GATEWAY_MULTI_TENANCY_ENABLED:false}
+    # Authentication example: enable multi-tenancy and configure an interceptor ID, class and JAR.
+    # Example class: com.example.gateway.AuthenticationInterceptor
+    interceptors:
+      # Environment: TASKITE_GATEWAY_INTERCEPTORS_0_ID
+      - id: ${TASKITE_GATEWAY_INTERCEPTORS_0_ID:}
+        # Environment: TASKITE_GATEWAY_INTERCEPTORS_0_CLASS_NAME
+        class-name: ${TASKITE_GATEWAY_INTERCEPTORS_0_CLASS_NAME:}
+        # Environment: TASKITE_GATEWAY_INTERCEPTORS_0_JAR_PATH
+        jar-path: ${TASKITE_GATEWAY_INTERCEPTORS_0_JAR_PATH:}

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="944" viewBox="0 0 1200 944" role="img" aria-labelledby="title description">
+  <title id="title">Broker 分区 Key：1 位符号、4 位集群、9 位分区、50 位序号</title>
+  <desc id="description">符号位 63 固定为零。集群占位 62 到 59，0 为 PD 保留，1 到 15 为 Broker 集群。分区占位 58 到 50，直接编码实际分区 1 到 511，0 保留。序号占位 49 到 0，实体序号从 1 到 2 的 50 次方减一。集群左移 59 位，分区左移 50 位。PD 与 Broker 共用编解码与生成器。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1 L7 4 L1 7 Z" fill="#62716B"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #19332A; }
+    .muted { fill: #62716B; }
+    .mono { font-family: "SFMono-Regular", Menlo, Consolas, monospace; }
+    .card { fill: #FFFFFF; stroke: #D5E2DB; stroke-width: 1; }
+    .flow { fill: none; stroke: #62716B; stroke-width: 1.8; stroke-linecap: round; marker-end: url(#arrow); }
+  </style>
+  <rect width="1200" height="944" fill="#F5F8F6"/>
+  <text x="56" y="63" font-size="32" font-weight="650">Broker 分区 Key · 64 位布局</text>
+  <text x="56" y="98" font-size="19" class="muted">0：PD 保留 · 1～15：Broker 集群 · 每集群 511 个分区 · 统一编解码</text>
+
+  <text x="64.5" y="129" text-anchor="middle" font-size="13" class="mono muted">63</text>
+  <text x="107" y="129" text-anchor="middle" font-size="13" class="mono muted">62..59</text>
+  <text x="217.5" y="129" text-anchor="middle" font-size="13" class="mono muted">58..50</text>
+  <text x="719" y="129" text-anchor="middle" font-size="13" class="mono muted">49..0</text>
+  <rect x="56" y="144" width="17" height="64" fill="#DCE5E0"/>
+  <rect x="73" y="144" width="68" height="64" fill="#A4D5BC"/>
+  <rect x="141" y="144" width="153" height="64" fill="#66B28D"/>
+  <rect x="294" y="144" width="850" height="64" fill="#216844"/>
+  <text x="64.5" y="183" text-anchor="middle" font-size="16" class="mono">0</text>
+  <text x="107" y="183" text-anchor="middle" font-size="16" class="mono">4 bit</text>
+  <text x="217.5" y="183" text-anchor="middle" font-size="18" class="mono">9 bit</text>
+  <text x="719" y="183" text-anchor="middle" font-size="24" class="mono" style="fill:#FFFFFF">50 bit · sequence</text>
+
+  <rect class="card" x="56" y="236" width="160" height="112" rx="12"/>
+  <text x="72" y="267" font-size="19" font-weight="600">符号 · 1 位</text>
+  <text x="72" y="298" font-size="18">固定为 0</text>
+  <text x="72" y="326" font-size="16" class="muted">实体 key 为正 long</text>
+
+  <rect class="card" x="240" y="236" width="280" height="112" rx="12"/>
+  <text x="260" y="267" font-size="19" font-weight="600">集群 · 4 位</text>
+  <text x="260" y="298" font-size="18" class="mono">clusterKey: 0..15</text>
+  <text x="260" y="326" font-size="16" class="muted">0：PD；1～15：Broker 集群</text>
+
+  <rect class="card" x="544" y="236" width="280" height="112" rx="12"/>
+  <text x="564" y="267" font-size="19" font-weight="600">分区 · 9 位</text>
+  <text x="564" y="298" font-size="18">实际 partitionId：1～511</text>
+  <text x="564" y="326" font-size="16" class="muted">直接编码实际编号，0 保留</text>
+
+  <rect class="card" x="848" y="236" width="296" height="112" rx="12"/>
+  <text x="868" y="267" font-size="19" font-weight="600">序号 · 50 位</text>
+  <text x="868" y="298" font-size="18" class="mono">1..2^50-1</text>
+  <text x="868" y="326" font-size="16" class="mono muted">max: 1,125,899,906,842,623</text>
+
+  <rect class="card" x="56" y="376" width="1088" height="108" rx="12"/>
+  <text x="80" y="406" font-size="18" font-weight="600">编码公式</text>
+  <text x="80" y="437" font-size="19" class="mono">key = (clusterKey &lt;&lt; 59) | ((long) partitionId &lt;&lt; 50) | sequence</text>
+  <text x="80" y="465" font-size="16" class="muted">先校验范围，再组合；最大合法 key = Long.MAX_VALUE，不向前缀进位。</text>
+
+  <rect class="card" x="56" y="512" width="1088" height="172" rx="12"/>
+  <text x="80" y="545" font-size="21" font-weight="600">相同分区、相同序号，跨集群仍不重复</text>
+  <text x="160" y="577" font-size="16" class="muted">集群编号</text>
+  <text x="310" y="577" font-size="16" class="muted">实际分区</text>
+  <text x="460" y="577" font-size="16" class="muted">序号</text>
+  <text x="650" y="577" font-size="16" class="muted">十六进制 key</text>
+  <line x1="80" y1="591" x2="1120" y2="591" stroke="#D5E2DB"/>
+  <text x="160" y="621" font-size="20" class="mono">0</text>
+  <text x="310" y="621" font-size="20" class="mono">1</text>
+  <text x="460" y="621" font-size="20" class="mono">1</text>
+  <text x="650" y="621" font-size="21" class="mono">0x0004000000000001</text>
+  <text x="160" y="656" font-size="20" class="mono">1</text>
+  <text x="310" y="656" font-size="20" class="mono">1</text>
+  <text x="460" y="656" font-size="20" class="mono">1</text>
+  <text x="650" y="656" font-size="21" class="mono">0x0804000000000001</text>
+
+  <text x="56" y="727" font-size="23" font-weight="600">生成与恢复</text>
+  <rect class="card" x="56" y="752" width="228" height="88" rx="12"/>
+  <text x="170" y="785" text-anchor="middle" font-size="18" font-weight="600">PD：单 Raft 分区</text>
+  <text x="170" y="815" text-anchor="middle" font-size="16" class="mono muted">GetClusterConfig</text>
+  <rect class="card" x="336" y="752" width="228" height="88" rx="12"/>
+  <text x="450" y="785" text-anchor="middle" font-size="18" font-weight="600">Broker 固定身份</text>
+  <text x="450" y="815" text-anchor="middle" font-size="16" class="muted">集群编号 + 实际分区</text>
+  <rect class="card" x="616" y="752" width="228" height="88" rx="12"/>
+  <text x="730" y="785" text-anchor="middle" font-size="18" font-weight="600">事务读取高水位</text>
+  <text x="730" y="815" text-anchor="middle" font-size="16" class="muted">校验身份与序号边界</text>
+  <rect class="card" x="896" y="752" width="248" height="88" rx="12"/>
+  <text x="1020" y="785" text-anchor="middle" font-size="18" font-weight="600">递增并持久化</text>
+  <text x="1020" y="815" text-anchor="middle" font-size="15" class="mono muted">KEY/keygen/latestKey</text>
+  <path class="flow" d="M284 796 L336 796"/>
+  <path class="flow" d="M564 796 L616 796"/>
+  <path class="flow" d="M844 796 L896 796"/>
+  <text x="56" y="882" font-size="18">追加与回放仅用同一集群、同一分区的 Key 提升高水位；外部前缀自然忽略。</text>
+  <text x="56" y="914" font-size="16" class="muted">序号 0 仅用于基础值/路由。实体从 1 开始。位条按位宽比例绘制；说明卡片不按比例。</text>
+</svg>

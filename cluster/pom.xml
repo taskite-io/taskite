@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.taskite</groupId>
+    <artifactId>taskite-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>cluster</artifactId>
+  <name>Taskite Cluster</name>
+  <dependencies>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>db</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>scheduler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>snapshot</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+    </dependency>
+    <!-- jraft's gRPC transport (GrpcServer/GrpcClient) requires grpc-protobuf's ProtoUtils. -->
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+    </dependency>
+    <!--
+      SOFAJRaft consensus engine (Phase 1 of the jraft migration; see
+      cluster-raft-to-jraft-migration-plan.md). rpc-grpc-impl transitively brings jraft-core and
+      makes raft ride the same grpc-netty-shaded stack as the business APIs. grpc-* are excluded in
+      the root dependencyManagement so a single grpc version (1.68.1) serves raft + business.
+    -->
+    <dependency>
+      <groupId>com.alipay.sofa</groupId>
+      <artifactId>rpc-grpc-impl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.rocksdb</groupId>
+      <artifactId>rocksdbjni</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

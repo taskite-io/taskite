@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sbe:messageSchema
+        xmlns:sbe="http://fixprotocol.io/2016/sbe"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        package="io.taskite.protocol.record"
+        id="900"
+        version="16"
+        semanticVersion="${project.version}"
+        byteOrder="littleEndian">
+
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+
+        <composite name="groupSizeEncoding" description="Repeating group dimensions">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="numInGroup" primitiveType="uint16"/>
+        </composite>
+
+        <composite name="varDataEncoding">
+            <type name="length" primitiveType="uint32" maxValue="2147483647"/>
+            <type name="varData" primitiveType="uint8" length="0" characterEncoding="UTF-8"/>
+        </composite>
+
+        <enum name="errorCode" encodingType="uint8" semanticType="String" description="The error code of an error">
+            <validValue name="INTERNAL_ERROR">0</validValue>
+            <validValue name="PARTITION_LEADER_MISMATCH">1</validValue>
+            <validValue name="RESOURCE_EXHAUSTED">2</validValue>
+        </enum>
+
+        <enum name="RecordType" encodingType="uint8">
+            <validValue name="EVENT">0</validValue>
+            <validValue name="COMMAND">1</validValue>
+            <validValue name="COMMAND_REJECTION">2</validValue>
+        </enum>
+
+        <enum name="ValueType" encodingType="uint8" description="The type of a record value">
+            <validValue name="TOPOLOGY">0</validValue>
+            <validValue name="BROKER_REGISTRATION">1</validValue>
+            <validValue name="MEMBER_CHANGE">2</validValue>
+            <validValue name="PARTITION_CHANGE">3</validValue>
+            <validValue name="BROKER_PARTITION_CONFIGURATION">4</validValue>
+            <validValue name="BROKER_PARTITION_OPERATION">5</validValue>
+            <validValue name="COMMAND_DISTRIBUTION">6</validValue>
+            <validValue name="JOB_SUBSCRIPTION">7</validValue>
+            <validValue name="JOB_SUBSCRIPTION_DELETION">8</validValue>
+            <validValue name="JOB_SUBSCRIPTION_MIRROR">9</validValue>
+            <validValue name="WORKER_REGISTRATION">10</validValue>
+            <validValue name="JOB">11</validValue>
+            <validValue name="JOB_BATCH">12</validValue>
+            <validValue name="JOB_YIELD">13</validValue>
+            <validValue name="INCIDENT">14</validValue>
+            <validValue name="VARIABLE">15</validValue>
+            <validValue name="VARIABLE_DOCUMENT">16</validValue>
+            <validValue name="TIMER">17</validValue>
+        </enum>
+
+        <enum name="RejectionType" encodingType="uint8">
+            <validValue name="INVALID_ARGUMENT">0</validValue>
+            <validValue name="NOT_FOUND">1</validValue>
+            <validValue name="ALREADY_EXISTS">2</validValue>
+            <validValue name="INVALID_STATE">3</validValue>
+            <validValue name="PROCESSING_ERROR">4</validValue>
+            <validValue name="EXCEEDED_BATCH_RECORD_SIZE">5</validValue>
+            <validValue name="STALE_WORKER_SESSION">6</validValue>
+            <validValue name="FEATURE_DISABLED">7</validValue>
+            <validValue name="WORKER_SESSION_NOT_READY">8</validValue>
+        </enum>
+
+        <enum name="TopologyOperationType" encodingType="uint8">
+            <validValue name="ADD">0</validValue>
+            <validValue name="JOIN">1</validValue>
+            <validValue name="PROMOTE_LEARNER">2</validValue>
+            <validValue name="LEAVE">3</validValue>
+            <validValue name="RECONFIGURE_PRIORITY">4</validValue>
+            <validValue name="TRANSFER_LEADER">5</validValue>
+            <validValue name="STEP_DOWN_IF_NOT_PRIMARY">6</validValue>
+            <validValue name="RESET_PEERS">7</validValue>
+        </enum>
+
+        <enum name="BrokerPartitionChangePurpose" encodingType="uint8">
+            <validValue name="MIGRATION">0</validValue>
+            <validValue name="BOOTSTRAP">1</validValue>
+        </enum>
+
+        <enum name="BrokerPartitionChangeStatus" encodingType="uint8">
+            <validValue name="PENDING">0</validValue>
+            <validValue name="IN_PROGRESS">1</validValue>
+            <validValue name="WAITING_READY">2</validValue>
+            <validValue name="WAITING_LEADER_CONVERGE">3</validValue>
+            <validValue name="COMPLETED">4</validValue>
+            <validValue name="FAILED">5</validValue>
+            <validValue name="SUPERSEDING">6</validValue>
+            <validValue name="SUPERSEDED">7</validValue>
+            <validValue name="QUEUED">8</validValue>
+        </enum>
+
+        <enum name="TopologyOperationStatus" encodingType="uint8">
+            <validValue name="NONE">0</validValue>
+            <validValue name="IN_PROGRESS">1</validValue>
+            <validValue name="APPLIED">2</validValue>
+            <validValue name="FAILED">3</validValue>
+        </enum>
+
+    </types>
+
+
+    <sbe:message name="ErrorResponse" id="10" description="Standard error response">
+        <field name="errorCode" id="1" type="errorCode"/>
+        <data name="errorMessage" id="2" type="varDataEncoding"/>
+    </sbe:message>
+
+    <sbe:message name="ExecuteCommandRequest" id="20">
+        <field name="partitionId" id="1" type="uint16"/>
+        <field name="key" id="4" type="uint64"/>
+        <field name="valueType" id="5" type="ValueType"/>
+        <field name="intent" id="6" type="uint8"/>
+        <data name="value" id="7" type="varDataEncoding"/>
+        <data name="clusterId" id="8" type="varDataEncoding" sinceVersion="8"/>
+    </sbe:message>
+
+    <sbe:message name="ExecuteCommandResponse" id="21">
+        <field name="partitionId" id="1" type="uint16"/>
+        <field name="key" id="2" type="uint64"/>
+        <field name="recordType" id="3" type="RecordType"/>
+        <field name="valueType" id="4" type="ValueType"/>
+        <field name="intent" id="5" type="uint8"/>
+        <!-- populated when RecordType is COMMAND_REJECTION -->
+        <field name="rejectionType" id="6" type="RejectionType"/>
+        <!-- populated when RecordType is COMMAND_REJECTION, UTF-8-encoded String -->
+        <data name="rejectionReason" id="7" type="varDataEncoding"/>
+        <data name="value" id="8" type="varDataEncoding"/>
+    </sbe:message>
+
+
+    <sbe:message name="ExecuteAdminRequest" id="22" sinceVersion="13">
+        <field name="partitionId" id="1" type="int32"/>
+        <field name="valueType" id="2" type="ValueType"/>
+        <field name="intent" id="3" type="uint8"/>
+        <data name="clusterId" id="4" type="varDataEncoding"/>
+        <data name="value" id="5" type="varDataEncoding"/>
+    </sbe:message>
+
+    <sbe:message name="ExecuteAdminResponse" id="23" sinceVersion="13">
+        <field name="partitionId" id="1" type="int32"/>
+        <field name="valueType" id="2" type="ValueType"/>
+        <field name="intent" id="3" type="uint8"/>
+        <field name="recordType" id="4" type="RecordType"/>
+        <field name="rejectionType" id="5" type="RejectionType"/>
+        <data name="clusterId" id="6" type="varDataEncoding"/>
+        <data name="rejectionReason" id="7" type="varDataEncoding"/>
+        <data name="value" id="8" type="varDataEncoding"/>
+    </sbe:message>
+
+    <sbe:message name="BrokerRegistrationRequest" id="304">
+        <field name="port" id="1" type="int32"/>
+        <field name="renewalTimeoutMillis" id="17" type="int64"/>
+        <field name="expectedLastRenewalEpochMillis" id="18" type="int64"/>
+        <field name="eventTimestampEpochMillis" id="22" type="int64" sinceVersion="7"/>
+        <field name="raftPort" id="23" type="int32" sinceVersion="9"/>
+        <field name="preservePartitionObservations" id="33" type="uint8" sinceVersion="10"/>
+        <group name="partitions" id="2" dimensionType="groupSizeEncoding">
+            <field name="partitionId" id="3" type="int32"/>
+            <field name="term" id="4" type="int64"/>
+            <field name="matchIndex" id="10" type="int64" sinceVersion="3"/>
+            <field name="lag" id="11" type="int64" sinceVersion="3"/>
+            <field name="readyForPromotion" id="12" type="uint8" sinceVersion="3"/>
+            <field name="priority" id="13" type="int32" sinceVersion="3"/>
+            <field name="recoveryEpoch" id="21" type="int64" sinceVersion="5"/>
+            <field name="configurationIndex" id="24" type="int64" sinceVersion="10"/>
+            <field name="desiredPriority" id="25" type="int32" sinceVersion="10"/>
+            <field name="targetPriority" id="26" type="int32" sinceVersion="10"/>
+            <field name="serviceReady" id="27" type="uint8" sinceVersion="10"/>
+            <field name="observedAtEpochMillis" id="28" type="int64" sinceVersion="10"/>
+            <data name="role" id="5" type="varDataEncoding"/>
+            <data name="lifecycleState" id="14" type="varDataEncoding" sinceVersion="3"/>
+            <data name="lastOpId" id="15" type="varDataEncoding" sinceVersion="3"/>
+            <data name="lastOpStatus" id="16" type="varDataEncoding" sinceVersion="3"/>
+            <data name="configurationDigest" id="29" type="varDataEncoding" sinceVersion="10"/>
+            <data name="nodeState" id="30" type="varDataEncoding" sinceVersion="10"/>
+            <data name="leaderId" id="31" type="varDataEncoding" sinceVersion="10"/>
+        </group>
+        <data name="clusterId" id="6" type="varDataEncoding"/>
+        <data name="brokerId" id="7" type="varDataEncoding"/>
+        <data name="host" id="8" type="varDataEncoding"/>
+        <data name="version" id="9" type="varDataEncoding"/>
+        <data name="incarnationId" id="32" type="varDataEncoding" sinceVersion="10"/>
+    </sbe:message>
+
+    <sbe:message name="ClusterTopologyRecord" id="321">
+        <field name="clusterSize" id="1" type="int32"/>
+        <field name="partitionSize" id="2" type="int32"/>
+        <field name="replicationFactor" id="3" type="int32"/>
+        <field name="rosterEpoch" id="5" type="int64" sinceVersion="6"/>
+        <group name="voterRoster" id="6" dimensionType="groupSizeEncoding" sinceVersion="6">
+            <data name="brokerId" id="7" type="varDataEncoding"/>
+        </group>
+        <data name="clusterId" id="4" type="varDataEncoding"/>
+    </sbe:message>
+
+    <sbe:message name="ClusterBrokerRecord" id="322">
+        <field name="port" id="1" type="int32"/>
+        <field name="registeredAtEpochMillis" id="2" type="int64"/>
+        <field name="lastRenewalEpochMillis" id="3" type="int64"/>
+        <field name="renewalTimeoutMillis" id="20" type="int64"/>
+        <field name="raftPort" id="22" type="int32" sinceVersion="9"/>
+        <group name="partitions" id="4" dimensionType="groupSizeEncoding">
+            <field name="partitionId" id="5" type="int32"/>
+            <field name="term" id="6" type="int64"/>
+            <field name="matchIndex" id="13" type="int64" sinceVersion="3"/>
+            <field name="lag" id="14" type="int64" sinceVersion="3"/>
+            <field name="readyForPromotion" id="15" type="uint8" sinceVersion="3"/>
+            <field name="priority" id="16" type="int32" sinceVersion="3"/>
+            <field name="recoveryEpoch" id="21" type="int64" sinceVersion="5"/>
+            <field name="configurationIndex" id="23" type="int64" sinceVersion="10"/>
+            <field name="desiredPriority" id="24" type="int32" sinceVersion="10"/>
+            <field name="targetPriority" id="25" type="int32" sinceVersion="10"/>
+            <field name="serviceReady" id="26" type="uint8" sinceVersion="10"/>
+            <field name="observedAtEpochMillis" id="27" type="int64" sinceVersion="10"/>
+            <data name="role" id="7" type="varDataEncoding"/>
+            <data name="lifecycleState" id="17" type="varDataEncoding" sinceVersion="3"/>
+            <data name="lastOpId" id="18" type="varDataEncoding" sinceVersion="3"/>
+            <data name="lastOpStatus" id="19" type="varDataEncoding" sinceVersion="3"/>
+            <data name="configurationDigest" id="28" type="varDataEncoding" sinceVersion="10"/>
+            <data name="nodeState" id="29" type="varDataEncoding" sinceVersion="10"/>
+            <data name="leaderId" id="30" type="varDataEncoding" sinceVersion="10"/>
+        </group>
+        <data name="clusterId" id="8" type="varDataEncoding"/>
+        <data name="brokerId" id="9" type="varDataEncoding"/>
+        <data name="host" id="10" type="varDataEncoding"/>
+        <data name="version" id="11" type="varDataEncoding"/>
+        <data name="status" id="12" type="varDataEncoding"/>
+        <data name="incarnationId" id="31" type="varDataEncoding" sinceVersion="10"/>
+    </sbe:message>
+
+    <!-- PD-internal persisted partition topology (the placement source of truth). Kept off the
+         client/broker wire in Phase 1: the round-robin assignment is materialized deterministically
+         by the appliers and read back here, so the PD survives restart by replay rather than
+         recomputation. -->
+    <sbe:message name="PartitionTopologyRecord" id="323">
+        <field name="partitionId" id="1" type="int32"/>
+        <field name="replicationFactor" id="2" type="int32"/>
+        <field name="recoveryEpoch" id="26" type="int64" sinceVersion="5"/>
+        <field name="initializing" id="40" type="uint8" sinceVersion="14"/>
+        <group name="desiredVoters" id="3" dimensionType="groupSizeEncoding">
+            <data name="brokerId" id="4" type="varDataEncoding"/>
+        </group>
+        <group name="currentVoters" id="5" dimensionType="groupSizeEncoding">
+            <data name="brokerId" id="6" type="varDataEncoding"/>
+        </group>
+        <group name="learners" id="7" dimensionType="groupSizeEncoding">
+            <data name="brokerId" id="8" type="varDataEncoding"/>
+        </group>
+        <group name="priorities" id="12" dimensionType="groupSizeEncoding" sinceVersion="3">
+            <field name="priority" id="13" type="int32"/>
+            <data name="brokerId" id="14" type="varDataEncoding"/>
+        </group>
+        <group name="replicaStates" id="15" dimensionType="groupSizeEncoding" sinceVersion="3">
+            <field name="matchIndex" id="16" type="int64"/>
+            <field name="lag" id="17" type="int64"/>
+            <field name="lastReportTimeEpochMillis" id="18" type="int64"/>
+            <field name="readyForPromotion" id="19" type="uint8"/>
+            <field name="priority" id="20" type="int32"/>
+            <field name="configurationIndex" id="31" type="int64" sinceVersion="10"/>
+            <field name="desiredPriority" id="32" type="int32" sinceVersion="10"/>
+            <field name="targetPriority" id="33" type="int32" sinceVersion="10"/>
+            <field name="serviceReady" id="34" type="uint8" sinceVersion="10"/>
+            <field name="observedAtEpochMillis" id="35" type="int64" sinceVersion="10"/>
+            <field name="replicaRecoveryEpoch" id="36" type="int64" sinceVersion="10"/>
+            <data name="brokerId" id="21" type="varDataEncoding"/>
+            <data name="role" id="22" type="varDataEncoding"/>
+            <data name="lifecycleState" id="23" type="varDataEncoding"/>
+            <data name="lastOpId" id="24" type="varDataEncoding"/>
+            <data name="lastOpStatus" id="25" type="varDataEncoding"/>
+            <data name="configurationDigest" id="37" type="varDataEncoding" sinceVersion="10"/>
+            <data name="nodeState" id="38" type="varDataEncoding" sinceVersion="10"/>
+            <data name="leaderId" id="39" type="varDataEncoding" sinceVersion="10"/>
+        </group>
+        <group name="fencedBrokerIds" id="27" dimensionType="groupSizeEncoding" sinceVersion="5">
+            <data name="brokerId" id="28" type="varDataEncoding"/>
+        </group>
+        <data name="clusterId" id="9" type="varDataEncoding"/>
+        <data name="status" id="10" type="varDataEncoding"/>
+        <data name="desiredPrimary" id="11" type="varDataEncoding"/>
+        <data name="recoveryPhase" id="29" type="varDataEncoding" sinceVersion="5"/>
+        <data name="survivorBrokerId" id="30" type="varDataEncoding" sinceVersion="5"/>
+    </sbe:message>
+
+    <sbe:message name="ChangePlanRecord" id="324">
+        <field name="partitionId" id="1" type="int32"/>
+        <field name="sourceTopologyVersion" id="2" type="int64"/>
+        <field name="targetTopologyVersion" id="3" type="int64"/>
+        <field name="nextOperationIndex" id="4" type="int32"/>
+        <field name="status" id="5" type="BrokerPartitionChangeStatus"/>
+        <field name="startedAtEpochMillis" id="13" type="int64" sinceVersion="3"/>
+        <field name="deadlineEpochMillis" id="14" type="int64" sinceVersion="3"/>
+        <field name="executionGeneration" id="32" type="int64" sinceVersion="11"/>
+        <field name="authorityIndex" id="33" type="int64" sinceVersion="11"/>
+        <field name="blockedSinceEpochMillis" id="34" type="int64" sinceVersion="11"/>
+        <field name="purpose" id="39" type="BrokerPartitionChangePurpose" sinceVersion="14"/>
+        <group name="operations" id="6" dimensionType="groupSizeEncoding">
+            <field name="operationType" id="7" type="TopologyOperationType"/>
+            <field name="priority" id="8" type="int32"/>
+            <field name="frozen" id="15" type="uint8" sinceVersion="10"/>
+            <field name="expectedMembershipEpoch" id="16" type="int64" sinceVersion="10"/>
+            <field name="expectedRecoveryEpoch" id="17" type="int64" sinceVersion="10"/>
+            <field name="targetRecoveryEpoch" id="18" type="int64" sinceVersion="10"/>
+            <group name="sourceMembers" id="19" dimensionType="groupSizeEncoding" sinceVersion="10">
+                <field name="voter" id="21" type="uint8"/>
+                <field name="priority" id="22" type="int32"/>
+                <data name="brokerId" id="23" type="varDataEncoding"/>
+            </group>
+            <group name="targetMembers" id="25" dimensionType="groupSizeEncoding" sinceVersion="10">
+                <field name="voter" id="27" type="uint8"/>
+                <field name="priority" id="28" type="int32"/>
+                <data name="brokerId" id="29" type="varDataEncoding"/>
+            </group>
+            <data name="opId" id="9" type="varDataEncoding"/>
+            <data name="targetBroker" id="10" type="varDataEncoding"/>
+            <data name="fencingProofId" id="31" type="varDataEncoding" sinceVersion="10"/>
+        </group>
+        <data name="clusterId" id="11" type="varDataEncoding"/>
+        <data name="changeId" id="12" type="varDataEncoding"/>
+        <data name="predecessorChangeId" id="35" type="varDataEncoding" sinceVersion="11"/>
+        <data name="successorChangeId" id="36" type="varDataEncoding" sinceVersion="11"/>
+        <data name="rootChangeId" id="37" type="varDataEncoding" sinceVersion="11"/>
+        <data name="blockedReason" id="38" type="varDataEncoding" sinceVersion="11"/>
+    </sbe:message>
+
+    <sbe:message name="BrokerTopologyOperationManifest" id="327">
+        <field name="partitionId" id="1" type="int32"/>
+        <field name="completedAtEpochMillis" id="2" type="int64"/>
+        <field name="status" id="3" type="TopologyOperationStatus"/>
+        <field name="configurationIndex" id="6" type="int64" sinceVersion="10"/>
+        <field name="recoveryEpoch" id="7" type="int64" sinceVersion="10"/>
+        <data name="opId" id="4" type="varDataEncoding"/>
+        <data name="errorMessage" id="5" type="varDataEncoding"/>
+        <data name="configurationDigest" id="8" type="varDataEncoding" sinceVersion="10"/>
+    </sbe:message>
+</sbe:messageSchema>

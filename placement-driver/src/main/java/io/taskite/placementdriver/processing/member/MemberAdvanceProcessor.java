@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2026 lzgabel and Taskite contributors
+ *
+ * Licensed under the Taskite Community License, Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *     https://github.com/taskite-io/taskite/blob/main/LICENSE
+ *
+ * The Software is source-available for non-commercial use and limited evaluation
+ * use. Other commercial use requires a separate written license. The Software is
+ * provided "AS IS", without warranties or conditions of any kind.
+ */
+package io.taskite.placementdriver.processing.member;
+
+import io.taskite.placementdriver.processing.topology.TopologyMembershipChangeBehavior;
+import io.taskite.protocol.impl.record.value.placementdriver.member.MemberChangeRecord;
+import io.taskite.protocol.record.TypedRecord;
+import io.taskite.protocol.record.intent.placementdriver.MemberChangeIntent;
+import io.taskite.streamplatform.api.processor.TypedRecordProcessor;
+import io.taskite.streamplatform.api.processor.TypedRecordProcessorContext;
+import java.util.Set;
+
+/** Changes plan progress while concrete operation commands own operation completion. */
+public final class MemberAdvanceProcessor implements TypedRecordProcessor<MemberChangeRecord> {
+  private final TopologyMembershipChangeBehavior behavior;
+
+  public MemberAdvanceProcessor(final TypedRecordProcessorContext context) {
+    behavior = new TopologyMembershipChangeBehavior(context);
+  }
+
+  @Override
+  public void processRecord(final TypedRecord<MemberChangeRecord> record) {
+    behavior.advance(record, MemberChangeIntent.ADVANCED, Set.of());
+  }
+}

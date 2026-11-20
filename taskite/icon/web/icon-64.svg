@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="taskite-title taskite-description" preserveAspectRatio="xMidYMid meet">
+  <title id="taskite-title">Taskite 分布式任务系统图标</title>
+  <desc id="taskite-description">蓝青色环形轨道连接三个分布式节点，表达任务分发、周期调度与故障后的持续执行；中央 T 对应 Taskite。</desc>
+  <defs>
+    <linearGradient id="taskite-orbit" x1="100" y1="100" x2="420" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4657E8" />
+      <stop offset="0.5" stop-color="#3478ED" />
+      <stop offset="1" stop-color="#10AAA9" />
+    </linearGradient>
+    <linearGradient id="taskite-letter" x1="182" y1="188" x2="300" y2="328" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4657E8" />
+      <stop offset="1" stop-color="#3478ED" />
+    </linearGradient>
+  </defs>
+  <g id="distributed-scheduling-ring" stroke="url(#taskite-orbit)" stroke-width="24" stroke-linecap="round">
+    <path d="M 313.30 89.59 A 176 176 0 0 1 428.77 289.58" />
+    <path d="M 371.47 388.83 A 176 176 0 0 1 140.53 388.83" />
+    <path d="M 83.23 289.58 A 176 176 0 0 1 198.70 89.59" />
+  </g>
+  <g id="distributed-worker-nodes">
+    <rect x="228" y="52" width="56" height="56" rx="18" fill="#4657E8" />
+    <rect x="380.42" y="316" width="56" height="56" rx="18" fill="#10AAA9" />
+    <rect x="75.58" y="316" width="56" height="56" rx="18" fill="#3478ED" />
+  </g>
+  <path id="taskite-t" d="M 192 188 H 320 C 331.05 188 340 196.95 340 208 C 340 219.05 331.05 228 320 228 H 284 C 279.58 228 276 231.58 276 236 V 308 C 276 319.05 267.05 328 256 328 C 244.95 328 236 319.05 236 308 V 236 C 236 231.58 232.42 228 228 228 H 192 C 180.95 228 172 219.05 172 208 C 172 196.95 180.95 188 192 188 Z" fill="url(#taskite-letter)" />
+</svg>

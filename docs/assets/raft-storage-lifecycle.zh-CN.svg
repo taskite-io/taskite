@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="2220" viewBox="0 0 2200 2220" role="img" aria-labelledby="title desc">
+  <title id="title">Taskite Raft 分区存储全生命周期</title>
+  <desc id="desc">展示 runtime、raft-log、raft-meta、snapshots 和 pending 从创建、运行、快照生成到故障恢复的完整生命周期。</desc>
+
+  <defs>
+    <style>
+      .bg { fill: #171717; }
+      .outer { fill: none; stroke: #343434; stroke-width: 2; }
+      .divider { stroke: #343434; stroke-width: 2; }
+      .node { fill: #1b1b1b; stroke: #3b3b3b; stroke-width: 2; }
+      .node-focus { fill: #1b1b1b; stroke: #32f08c; stroke-width: 4; }
+      .note-box { fill: #202020; stroke: #3b3b3b; stroke-width: 1.5; }
+      .phase-circle { fill: #262626; }
+      .badge { fill: #004d26; stroke: #02743b; stroke-width: 1.5; }
+      .sidecar { fill: #202020; stroke: #484848; stroke-width: 1.5; stroke-dasharray: 7 6; }
+      .risk-line { stroke: #f87454; stroke-width: 4; }
+
+      .title { fill: #e5e5e5; font: 600 34px "PingFang SC", "SF Pro Text", sans-serif; }
+      .subtitle { fill: #a1a1aa; font: 400 22px "PingFang SC", "SF Pro Text", sans-serif; }
+      .phase-number { fill: #e5e5e5; font: 500 22px "SF Mono", Menlo, monospace; }
+      .phase-title { fill: #e5e5e5; font: 600 28px "PingFang SC", "SF Pro Text", sans-serif; }
+      .node-title { fill: #e5e5e5; font: 600 25px "PingFang SC", "SF Pro Text", sans-serif; }
+      .node-code { fill: #e5e5e5; font: 500 25px "SF Mono", Menlo, monospace; }
+      .node-meta { fill: #a1a1aa; font: 400 20px "PingFang SC", "SF Pro Text", sans-serif; }
+      .node-meta-strong { fill: #d4d4d8; font: 500 20px "PingFang SC", "SF Pro Text", sans-serif; }
+      .badge-text { fill: #e5fff2; font: 600 18px "PingFang SC", "SF Pro Text", sans-serif; }
+      .note { fill: #a1a1aa; font: 400 20px "PingFang SC", "SF Pro Text", sans-serif; }
+      .footer { fill: #e5e5e5; font: 500 21px "PingFang SC", "SF Pro Text", sans-serif; }
+      .risk { fill: #d4d4d8; font: 400 20px "PingFang SC", "SF Pro Text", sans-serif; }
+      .arrow-label { fill: #d4d4d8; font: 500 19px "PingFang SC", "SF Pro Text", sans-serif; }
+      .arrow-label-green { fill: #e5fff2; font: 500 19px "PingFang SC", "SF Pro Text", sans-serif; }
+
+      .arrow { fill: none; stroke: #a1a1aa; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .arrow-green { fill: none; stroke: #32f08c; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .arrow-head { fill: #a1a1aa; }
+      .arrow-head-green { fill: #32f08c; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="2200" height="2220" rx="24"/>
+  <rect class="outer" x="1" y="1" width="2198" height="2218" rx="24"/>
+
+  <text class="title" x="52" y="72">Taskite 分区存储全生命周期</text>
+  <text class="subtitle" x="52" y="122">raft-log 保存顺序事实，runtime 保存当前状态，snapshots 保存状态机恢复基线</text>
+  <rect class="sidecar" x="1460" y="40" width="680" height="72" rx="36"/>
+  <text class="node-code" x="1800" y="85" text-anchor="middle">State(N) = Snapshot(S) + Log(S+1..N)</text>
+  <line class="divider" x1="52" y1="166" x2="2148" y2="166"/>
+
+  <!-- Phase 1: create -->
+  <circle class="phase-circle" cx="82" cy="224" r="30"/>
+  <text class="phase-number" x="82" y="232" text-anchor="middle">1</text>
+  <text class="phase-title" x="136" y="234">创建</text>
+  <rect class="sidecar" x="1600" y="196" width="500" height="54" rx="12"/>
+  <text class="node-meta-strong" x="1850" y="231" text-anchor="middle">raft-meta/ · currentTerm + votedFor</text>
+
+  <rect class="node" x="330" y="282" width="540" height="190" rx="14"/>
+  <text class="node-code" x="365" y="330">runtime/</text>
+  <text class="node-meta" x="365" y="378">PartitionStorage 创建或打开</text>
+  <text class="node-meta" x="365" y="420">RocksDB 业务状态库</text>
+
+  <rect class="node" x="940" y="282" width="540" height="190" rx="14"/>
+  <text class="node-code" x="975" y="330">raft-log/</text>
+  <text class="node-meta" x="975" y="378">JRaft LogStorage 创建或打开</text>
+  <text class="node-meta" x="975" y="420">持久化 Raft Entry</text>
+
+  <rect class="node" x="1550" y="282" width="550" height="190" rx="14"/>
+  <text class="node-code" x="1585" y="330">snapshots/</text>
+  <text class="node-meta" x="1585" y="378">JRaft SnapshotStorage 创建</text>
+  <text class="node-meta" x="1585" y="420">pending/ 在快照时按需创建</text>
+
+  <line class="divider" x1="52" y1="530" x2="2148" y2="530"/>
+
+  <!-- Phase 2: run -->
+  <circle class="phase-circle" cx="82" cy="594" r="30"/>
+  <text class="phase-number" x="82" y="602" text-anchor="middle">2</text>
+  <text class="phase-title" x="136" y="604">运行</text>
+
+  <rect class="node" x="330" y="652" width="760" height="176" rx="14"/>
+  <text class="node-code" x="365" y="700">raft-log/</text>
+  <text class="node-meta" x="365" y="748">Leader append → 多数派复制 → commit</text>
+  <text class="node-meta" x="365" y="790">保留批次、index、term 与日志顺序</text>
+
+  <path class="arrow-green" d="M1122 740 H1232"/>
+  <path class="arrow-head-green" d="M1232 726 L1258 740 L1232 754 Z"/>
+  <text class="arrow-label-green" x="1190" y="712" text-anchor="middle">onApply</text>
+
+  <rect class="node" x="1290" y="652" width="810" height="176" rx="14"/>
+  <text class="node-code" x="1325" y="700">runtime/</text>
+  <text class="node-meta" x="1325" y="748">Stream Processor 应用 EVENT</text>
+  <text class="node-meta" x="1325" y="790">业务状态 + 索引 + lastProcessedPosition 原子提交</text>
+
+  <line x1="330" y1="852" x2="330" y2="900" stroke="#484848" stroke-width="4"/>
+  <text class="note" x="365" y="883">commit 不会立即删除日志；runtime 是持续更新的当前状态，不是日志文件副本。</text>
+  <line class="divider" x1="52" y1="930" x2="2148" y2="930"/>
+
+  <!-- Phase 3: snapshot -->
+  <circle class="phase-circle" cx="82" cy="994" r="30"/>
+  <text class="phase-number" x="82" y="1002" text-anchor="middle">3</text>
+  <text class="phase-title" x="136" y="1004">快照</text>
+
+  <rect class="node" x="330" y="1060" width="360" height="350" rx="14"/>
+  <text class="node-title" x="365" y="1110">Leader-only 触发</text>
+  <text class="node-meta" x="365" y="1160">默认未覆盖日志 ≥ 128MB</text>
+  <text class="node-meta" x="365" y="1204">或 15min / manual</text>
+
+  <path class="arrow-green" d="M722 1235 H902"/>
+  <path class="arrow-head-green" d="M902 1221 L928 1235 L902 1249 Z"/>
+  <text class="arrow-label-green" x="825" y="1205" text-anchor="middle">processed ≥ committed</text>
+
+  <rect class="node-focus" x="960" y="1035" width="660" height="400" rx="14"/>
+  <rect class="badge" x="995" y="1070" width="180" height="46" rx="23"/>
+  <text class="badge-text" x="1085" y="1100" text-anchor="middle">核心切换点</text>
+  <text class="node-title" x="995" y="1160">生成并发布 snapshot</text>
+  <text class="node-meta" x="995" y="1210">runtime → pending/.../rocksdb checkpoint</text>
+  <text class="node-meta" x="995" y="1256">写 application-position 与 Raft index/term</text>
+  <text class="node-meta" x="995" y="1302">JRaft 成功发布到 snapshots/</text>
+  <text class="node-meta-strong" x="995" y="1360">runtime 保持在线，不会因快照而清空</text>
+
+  <path class="arrow-green" d="M1652 1235 H1732"/>
+  <path class="arrow-head-green" d="M1732 1221 L1758 1235 L1732 1249 Z"/>
+  <text class="arrow-label-green" x="1705" y="1205" text-anchor="middle">发布成功</text>
+
+  <rect class="node" x="1790" y="1060" width="310" height="350" rx="14"/>
+  <text class="node-title" x="1825" y="1110">压缩 raft-log</text>
+  <text class="node-meta" x="1825" y="1160">截断 snapshotIndex</text>
+  <text class="node-meta" x="1825" y="1202">之前的日志前缀</text>
+  <text class="node-meta" x="1825" y="1260">只保留快照后的</text>
+  <text class="node-meta" x="1825" y="1302">日志尾部</text>
+
+  <line x1="330" y1="1462" x2="330" y2="1510" stroke="#484848" stroke-width="4"/>
+  <text class="note" x="365" y="1493">快照失败或 runtime 尚未追平：不替换已提交快照、不截断日志，SnapshotDirector 按 1s…60s 退避重试。</text>
+  <line class="divider" x1="52" y1="1540" x2="2148" y2="1540"/>
+
+  <!-- Phase 4: recover -->
+  <circle class="phase-circle" cx="82" cy="1604" r="30"/>
+  <text class="phase-number" x="82" y="1612" text-anchor="middle">4</text>
+  <text class="phase-title" x="136" y="1614">恢复</text>
+
+  <rect class="node" x="330" y="1665" width="520" height="112" rx="14"/>
+  <text class="node-title" x="365" y="1710">本地重启</text>
+  <text class="node-meta" x="365" y="1750">读取最新 snapshots</text>
+
+  <rect class="node" x="330" y="1800" width="520" height="112" rx="14"/>
+  <text class="node-title" x="365" y="1845">Follower 严重落后</text>
+  <text class="node-meta" x="365" y="1885">Leader InstallSnapshot</text>
+
+  <rect class="node" x="330" y="1935" width="520" height="112" rx="14"/>
+  <text class="node-title" x="365" y="1980">无快照但 runtime 完整</text>
+  <text class="node-meta" x="365" y="2020">沿用持久化 cursor</text>
+
+  <path class="arrow-green" d="M882 1856 H972"/>
+  <path class="arrow-head-green" d="M972 1842 L998 1856 L972 1870 Z"/>
+
+  <rect class="node" x="1030" y="1735" width="580" height="250" rx="14"/>
+  <text class="node-title" x="1065" y="1785">建立 runtime 恢复基线</text>
+  <text class="node-meta" x="1065" y="1835">snapshot 路径：停用分区 → 清空 runtime</text>
+  <text class="node-meta" x="1065" y="1880">→ 导入 checkpoint → 恢复 position</text>
+  <text class="node-meta" x="1065" y="1925">恢复 processedPosition / applicationPosition</text>
+
+  <path class="arrow-green" d="M1642 1856 H1682"/>
+  <path class="arrow-head-green" d="M1682 1842 L1708 1856 L1682 1870 Z"/>
+  <text class="arrow-label-green" x="1675" y="1826" text-anchor="middle">replay</text>
+
+  <rect class="node" x="1740" y="1735" width="360" height="250" rx="14"/>
+  <text class="node-title" x="1775" y="1785">重放 raft-log 尾部</text>
+  <text class="node-meta" x="1775" y="1835">从 lastProcessedPosition + 1</text>
+  <text class="node-meta" x="1775" y="1880">追到 committedPosition</text>
+  <text class="node-meta" x="1775" y="1925">后恢复服务</text>
+
+  <line class="risk-line" x1="330" y1="2072" x2="330" y2="2128"/>
+  <text class="risk" x="365" y="2107">不可本地重建：runtime 丢失 + snapshots 丢失 + raft-log 前缀已压缩。必须从健康副本安装快照或重新创建副本。</text>
+
+  <rect class="note-box" x="52" y="2150" width="2096" height="52" rx="12"/>
+  <text class="footer" x="1100" y="2184" text-anchor="middle">snapshots 物理保存 runtime checkpoint；Raft index/term 只定义它覆盖了哪段 raft-log</text>
+</svg>

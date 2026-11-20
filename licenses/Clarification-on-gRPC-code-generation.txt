@@ -1,0 +1,16 @@
+Clarification on Taskite gRPC Code Generation
+
+The Taskite Gateway Protocol API is published at:
+
+gateway-protocol/src/main/resources/gateway.proto
+
+Using standard Protocol Buffers or gRPC tooling to generate client or server
+stubs from that API definition does not, by itself, make the generated code a
+derivative work of Taskite. The Taskite Community License imposes no
+restriction on generated stub code that contains no substantial copied
+Taskite implementation or documentation.
+
+This clarification applies only to ownership and licensing of generated stub
+code. Using that code to access, operate, embed, distribute, or provide
+Taskite remains subject to the Taskite Community License, including its
+commercial-use restrictions.

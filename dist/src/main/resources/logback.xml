@@ -1,0 +1,28 @@
+<configuration>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="io.grpc" level="WARN" />
+  <logger name="io.netty" level="WARN" />
+  <logger name="io.grpc.netty.shaded" level="WARN" />
+  <logger name="org.apache.pekko" level="WARN" />
+
+  <!--
+    jraft's Replicator keeps probing an unreachable peer on purpose: that retry loop is exactly how
+    a follower/leader re-attaches automatically when the peer comes back (no manual reconnect
+    needed). The per-attempt transport churn ("transient failure on this channel", "Fail to
+    connect", "Creating new channel ...") is therefore expected and redundant with the structured
+    liveness we already expose via the PD /members endpoint. Silence the transport chatter while
+    keeping raft lifecycle events (elections, leadership, config changes from NodeImpl) at INFO.
+  -->
+  <logger name="com.alipay.sofa.jraft.rpc.impl.GrpcClient" level="OFF" />
+  <logger name="com.alipay.sofa.jraft.rpc.impl.AbstractClientService" level="OFF" />
+  <logger name="com.alipay.sofa.jraft.core.Replicator" level="WARN" />
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE" />
+  </root>
+</configuration>

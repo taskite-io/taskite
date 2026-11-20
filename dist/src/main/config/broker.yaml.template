@@ -1,0 +1,107 @@
+# Broker configuration file.
+#
+# Activate this file by copying or renaming it to application.yaml in a Spring
+# configuration location, for example ./config/application.yaml.
+
+# Complete CLI properties > named environment variables > external YAML > packaged defaults.
+# ENV names are the full YAML path in uppercase, with each separator replaced by "_".
+server:
+  # The Broker has no general-purpose HTTP API. Keep the primary web server disabled.
+  port: -1
+  shutdown: graceful
+
+management:
+  server:
+    # Actuator management endpoint address and port.
+    address: ${MANAGEMENT_SERVER_ADDRESS:0.0.0.0}
+    port: ${MANAGEMENT_SERVER_PORT:9600}
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      enabled: true
+      show-details: never
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+taskite:
+  broker:
+    # Enable the Broker runtime and its lifecycle-managed components.
+    enabled: ${TASKITE_BROKER_ENABLED:true}
+    worker-job-lease-token:
+      # Enable the Worker job token verification and recovery feature. Default is true.
+      enabled: ${TASKITE_BROKER_WORKER_JOB_LEASE_TOKEN_ENABLED:true}
+    cluster:
+      # Cluster registered in the placement driver.
+      cluster-id: ${TASKITE_BROKER_CLUSTER_CLUSTER_ID:}
+      # Unique Broker identity within the cluster.
+      broker-id: ${TASKITE_BROKER_CLUSTER_BROKER_ID:broker-0}
+    network:
+      # Public business gRPC endpoint used by gateways and clients.
+      host: ${TASKITE_BROKER_NETWORK_HOST:127.0.0.1}
+      command-port: ${TASKITE_BROKER_NETWORK_COMMAND_PORT:26501}
+      # Dedicated Broker-to-Broker Raft transport port.
+      raft-port: ${TASKITE_BROKER_NETWORK_RAFT_PORT:26502}
+    registration:
+      # Comma-separated placement-driver gRPC endpoints.
+      # Environment: TASKITE_BROKER_REGISTRATION_PLACEMENT_DRIVERS
+      placement-drivers: ${TASKITE_BROKER_REGISTRATION_PLACEMENT_DRIVERS:}
+      # Environment: TASKITE_BROKER_REGISTRATION_RENEW_INTERVAL
+      renew-interval: ${TASKITE_BROKER_REGISTRATION_RENEW_INTERVAL:1s}
+      # Local PD RPC timeout, also reported to PD; PD's lease remains authoritative.
+      # Environment: TASKITE_BROKER_REGISTRATION_RENEWAL_TIMEOUT
+      renewal-timeout: ${TASKITE_BROKER_REGISTRATION_RENEWAL_TIMEOUT:30s}
+      # Environment: TASKITE_BROKER_REGISTRATION_TOPOLOGY_REFRESH_INTERVAL
+      topology-refresh-interval: ${TASKITE_BROKER_REGISTRATION_TOPOLOGY_REFRESH_INTERVAL:5s}
+      # Explicit PD backpressure retry policy. Actual waits are also capped by renew-interval.
+      # Environment prefix: TASKITE_BROKER_REGISTRATION_BACKPRESSURE_
+      backpressure:
+        min-delay: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_MIN_DELAY:50ms}
+        max-delay: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_MAX_DELAY:5s}
+        backoff-factor: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_BACKOFF_FACTOR:1.6}
+        jitter-factor: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_JITTER_FACTOR:0.1}
+    storage:
+      data-dir: ${TASKITE_BROKER_STORAGE_DATA_DIR:target/broker-data}
+      # Snapshot when either trigger is reached. One trigger may be disabled with zero.
+      # Environments: TASKITE_BROKER_STORAGE_SNAPSHOT_INTERVAL, TASKITE_BROKER_STORAGE_SNAPSHOT_LOG_SIZE_THRESHOLD
+      snapshot:
+        interval: ${TASKITE_BROKER_STORAGE_SNAPSHOT_INTERVAL:15m}
+        log-size-threshold: ${TASKITE_BROKER_STORAGE_SNAPSHOT_LOG_SIZE_THRESHOLD:128MB}
+    consensus:
+      # Environment: TASKITE_BROKER_CONSENSUS_ELECTION_TIMEOUT
+      election-timeout: ${TASKITE_BROKER_CONSENSUS_ELECTION_TIMEOUT:5s}
+    processing:
+      # Maximum commands processed in one state transaction. Set to 1 to disable batching.
+      max-commands-in-batch: ${TASKITE_BROKER_PROCESSING_MAX_COMMANDS_IN_BATCH:1}
+      # Optional soft admission budgets. Zero disables the corresponding budget.
+      max-records-in-batch: ${TASKITE_BROKER_PROCESSING_MAX_RECORDS_IN_BATCH:0}
+      max-batch-duration: ${TASKITE_BROKER_PROCESSING_MAX_BATCH_DURATION:0ms}
+      # Maximum final payload bytes in one atomic log batch (minimum 1024).
+      max-batch-bytes: ${TASKITE_BROKER_PROCESSING_MAX_BATCH_BYTES:3145728}
+    # Independent concurrency window for each partition; completion/deployment commands bypass it.
+    # Environments: TASKITE_BROKER_BACKPRESSURE_ENABLED, TASKITE_BROKER_BACKPRESSURE_ALGORITHM,
+    # TASKITE_BROKER_BACKPRESSURE_AIMD_*, TASKITE_BROKER_BACKPRESSURE_VEGAS_*, TASKITE_BROKER_BACKPRESSURE_FIXED_LIMIT.
+    backpressure:
+      enabled: ${TASKITE_BROKER_BACKPRESSURE_ENABLED:true}
+      algorithm: ${TASKITE_BROKER_BACKPRESSURE_ALGORITHM:aimd}
+      aimd:
+        request-timeout: ${TASKITE_BROKER_BACKPRESSURE_AIMD_REQUEST_TIMEOUT:200ms}
+        initial-limit: ${TASKITE_BROKER_BACKPRESSURE_AIMD_INITIAL_LIMIT:100}
+        min-limit: ${TASKITE_BROKER_BACKPRESSURE_AIMD_MIN_LIMIT:1}
+        max-limit: ${TASKITE_BROKER_BACKPRESSURE_AIMD_MAX_LIMIT:1000}
+        backoff-ratio: ${TASKITE_BROKER_BACKPRESSURE_AIMD_BACKOFF_RATIO:0.9}
+      vegas:
+        initial-limit: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_INITIAL_LIMIT:20}
+        alpha: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_ALPHA:3}
+        beta: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_BETA:6}
+        max-limit: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_MAX_LIMIT:1000}
+      fixed:
+        limit: ${TASKITE_BROKER_BACKPRESSURE_FIXED_LIMIT:20}
+    version: ${TASKITE_BROKER_VERSION:0.1.0-SNAPSHOT}

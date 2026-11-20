@@ -1,0 +1,29 @@
+management:
+  endpoints:
+    # Disable endpoints unless they are explicitly enabled below.
+    enabled-by-default: false
+    web:
+      exposure:
+        # Expose only health and Prometheus endpoints over HTTP.
+        include: health,prometheus
+  endpoint:
+    health:
+      # Enable the health endpoint on the PD HTTP listener.
+      enabled: true
+      # Do not expose detailed component health information in HTTP responses.
+      show-details: never
+    prometheus:
+      # Enable the Prometheus scrape endpoint.
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        # Enable publishing collected metrics through the Prometheus registry.
+        enabled: true
+
+taskite:
+  console:
+    # Serve the Taskite Console presentation layer at /console/.
+    enabled: ${TASKITE_CONSOLE_ENABLED:true}
+    # Deployment identity used to isolate browser change records; change it when rebuilding a cluster.
+    deployment-id: ${TASKITE_CONSOLE_DEPLOYMENT_ID:}

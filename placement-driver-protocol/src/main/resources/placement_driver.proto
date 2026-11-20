@@ -1,0 +1,615 @@
+syntax = "proto3";
+
+package placementDriverProtocol;
+
+option java_multiple_files = true;
+option java_package = "io.taskite.placementdriver.protocol";
+option go_package = "github.com/taskite-io/taskite/clients/go/pkg/pb/placementdriver;placementdriver";
+
+// Requests the configured topology dimensions for one Broker cluster.
+message GetClusterConfigRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+}
+
+// Describes the configured topology dimensions for one Broker cluster.
+message GetClusterConfigResponse {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the configured number of Brokers
+  int32 clusterSize = 2;
+  // the configured number of partitions
+  int32 partitionSize = 3;
+  // the configured number of replicas per partition
+  int32 replicationFactor = 4;
+  // the Broker identifiers removed from the active cluster configuration
+  repeated string removedBrokers = 5;
+  // Stable Broker key namespace (1–15); zero is reserved for placement-driver.
+  optional int64 clusterKey = 6;
+}
+
+// Requests the latest committed Broker topology for one cluster.
+message GetBrokerTopologyRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+}
+
+// Describes one Broker's latest observation of a local partition replica.
+message BrokerPartitionElectionState {
+  int64 configurationIndex = 1;
+  string configurationDigest = 2;
+  int32 desiredPriority = 3;
+  int32 targetPriority = 4;
+  string nodeState = 5;
+  string leaderId = 6;
+  bool serviceReady = 7;
+  int64 observedAtEpochMillis = 8;
+}
+
+message BrokerPartitionState {
+  // the partition identifier
+  int32 partitionId = 1;
+  // the local Raft role, such as LEADER, FOLLOWER, or LEARNER
+  string role = 2;
+  // the local Raft term
+  int64 term = 3;
+  // the replica lifecycle state, such as ACTIVE or CATCHING_UP
+  string lifecycleState = 4;
+  // the latest Raft log index applied by the local replica
+  int64 matchIndex = 5;
+  // the observed distance from the current leader's log
+  int64 lag = 6;
+  // whether a learner has caught up and can be promoted
+  bool readyForPromotion = 7;
+  // the Raft election priority configured for the replica
+  int32 priority = 8;
+  // the last topology operation identifier observed by the Broker
+  string lastOperationId = 9;
+  // the last topology operation status observed by the Broker
+  string lastOperationStatus = 10;
+  // the fenced recovery epoch applied by the local replica
+  int64 recoveryEpoch = 11;
+  // Stable applied configuration and local election readiness, independently observed.
+  BrokerPartitionElectionState election = 12;
+}
+
+// Describes one registered Broker and its reported partition replicas.
+message Broker {
+  // the stable Broker identifier
+  string brokerId = 1;
+  // the Broker API host
+  string host = 2;
+  // the Broker API port
+  int32 port = 3;
+  // the Broker software version
+  string version = 4;
+  // the registration timestamp in epoch milliseconds
+  int64 registeredAtEpochMillis = 5;
+  // the latest renewal timestamp in epoch milliseconds
+  int64 lastRenewalEpochMillis = 6;
+  // the PD RPC timeout reported by the Broker in milliseconds
+  int64 renewalTimeoutMillis = 7;
+  // the registration status determined by PD
+  string status = 8;
+  // the latest partition replica states reported by the Broker
+  repeated BrokerPartitionState partitions = 9;
+  // the dedicated Raft transport port advertised to other Brokers
+  int32 raftPort = 10;
+  string incarnationId = 11;
+}
+
+// Describes the committed placement of one Broker partition.
+message Partition {
+  // the partition identifier
+  int32 partitionId = 1;
+  // the current leader Broker identifier
+  string leaderId = 2;
+  // the follower Broker identifiers
+  repeated string replicas = 3;
+  // the learner Broker identifiers
+  repeated string learners = 4;
+  // the committed Raft term
+  int64 term = 5;
+  // the partition lifecycle status
+  string status = 6;
+  // the Raft election priority keyed by Broker identifier
+  map<string, int32> priorities = 7;
+  // the fenced recovery epoch for the partition
+  int64 recoveryEpoch = 8;
+  // Actual business readiness; independent of membership-change progress.
+  bool serviceReady = 9;
+}
+
+// Describes the latest committed topology of one Broker cluster.
+message BrokerTopology {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the monotonically increasing topology version
+  int64 version = 2;
+  // the configured number of Brokers
+  int32 clusterSize = 3;
+  // the configured number of partitions
+  int32 partitionSize = 4;
+  // the configured number of replicas per partition
+  int32 replicationFactor = 5;
+  // the topology update timestamp in epoch milliseconds
+  int64 updatedAtEpochMillis = 6;
+  // the registered Brokers visible in the topology
+  repeated Broker brokers = 7;
+  // the committed partition placements
+  repeated Partition partitions = 8;
+}
+
+// Opens a stream of committed Placement Driver membership and leadership updates.
+message WatchPlacementDriverTopologyRequest {}
+
+// Describes one Placement Driver member.
+message PlacementDriverMember {
+  // the stable member identifier
+  string memberId = 1;
+  // the advertised gRPC endpoint in host:port form
+  string endpoint = 2;
+  // the current Raft role
+  string role = 3;
+  // whether this entry describes the server handling the request
+  bool self = 4;
+  // the member host
+  string host = 5;
+  // the member HTTP administration port
+  int32 httpPort = 6;
+  // the member public gRPC port
+  int32 grpcPort = 7;
+  // the member Raft transport port
+  int32 raftPort = 8;
+  // the member lifecycle status
+  string status = 9;
+  // the process incarnation identifier
+  string incarnationId = 10;
+  // the endpoint generation used to reject stale advertisements
+  int64 endpointEpoch = 11;
+  // the latest committed Raft index
+  int64 commitIndex = 12;
+  // the latest applied Raft index
+  int64 lastApplied = 13;
+  // the latest local Raft log index
+  int64 lastLogIndex = 14;
+  // whether a learner has caught up and can be promoted
+  bool readyForPromotion = 15;
+}
+
+// Describes the latest committed Placement Driver cluster topology.
+message PlacementDriverTopology {
+  // the topology update type
+  string updateType = 1;
+  // the member identifier of the server publishing this update
+  string localMemberId = 2;
+  // the current leader member identifier
+  string leaderId = 3;
+  // the current leader gRPC endpoint in host:port form
+  string leaderEndpoint = 4;
+  // the current Placement Driver Raft term
+  int64 term = 5;
+  // the committed membership configuration epoch
+  int64 configurationEpoch = 6;
+  // the committed Placement Driver members
+  repeated PlacementDriverMember members = 7;
+}
+
+// Submits an internal PD member registration or topology observation.
+message UpdatePlacementDriverTopologyRequest {
+  PlacementDriverTopology topology = 1;
+}
+
+// Returns the topology produced by the committed root UPDATE command.
+message UpdatePlacementDriverTopologyResponse {
+  PlacementDriverTopology topology = 1;
+}
+
+// Ordinary task template distributed to Broker partitions.
+message CreateJobSubscriptionRequest {
+  // Optional display name.
+  string name = 2;
+  // Required Job type, unique within the cluster and tenant.
+  string jobType = 3;
+  // Optional JSON object; empty or blank means {}.
+  string variables = 4;
+  optional int32 retries = 6;
+  optional int32 priority = 7;
+}
+
+enum TimerSubscriptionType {
+  TIMER_TYPE_UNSPECIFIED = 0;
+  DURATION = 1;
+  CYCLE = 2;
+  CRON = 3;
+}
+
+message CreateTimerSubscriptionRequest {
+  // Required registered Broker cluster.
+  string clusterId = 1;
+  // Tenant scope of the timer and all required Job subscriptions.
+  string tenantId = 2;
+  // Required nonblank timer name.
+  string name = 4;
+  // Required supported schedule type.
+  TimerSubscriptionType type = 5;
+  // Required literal schedule valid for the selected type.
+  // Recovery uses this schedule and the PD time zone captured at creation.
+  string expression = 6;
+  // Distinct nonblank types with fully created JobSubscriptions in this cluster and tenant.
+  repeated string jobTypes = 7;
+  // Optional strict JSON object copied to each created Job; omitted means {}.
+  string variables = 8;
+}
+
+message CreateTimerSubscriptionResponse {
+  int64 timerSubscriptionKey = 1;
+  int64 dueDate = 2;
+}
+
+message DeleteTimerSubscriptionRequest {
+  string clusterId = 1;
+  string tenantId = 2;
+  int64 timerSubscriptionKey = 3;
+}
+
+message DeleteTimerSubscriptionResponse {
+  int64 timerSubscriptionKey = 1;
+}
+
+message DeleteJobSubscriptionRequest {
+  int64 subscriptionKey = 1;
+}
+
+// Requests a typed operation that PD must persist, coordinate, and distribute to Broker partitions.
+message DistributeCommandRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+  // the tenant identifier associated with the distributed operation
+  string tenantId = 2;
+  // The typed subscription operation to distribute.
+  oneof command {
+    CreateJobSubscriptionRequest createJobSubscription = 3;
+    DeleteJobSubscriptionRequest deleteJobSubscription = 4;
+  }
+}
+
+// Acknowledges that PD accepted and persisted a command-distribution request.
+message DistributeCommandResponse {
+  // the positive, stable key assigned to the distribution
+  int64 distributionKey = 1;
+}
+
+// Registers one Broker and its initial partition observations with PD.
+message RegisterBrokerRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+  // the stable Broker identifier
+  string brokerId = 2;
+  // the Broker API host
+  string host = 3;
+  // the Broker API port
+  int32 port = 4;
+  // the Broker software version
+  string version = 5;
+  // the Broker's local PD RPC timeout in milliseconds; PD controls the lease
+  int64 renewalTimeoutMillis = 6;
+  // the initial partition replica observations
+  repeated BrokerPartitionState partitions = 7;
+  // the dedicated Raft transport port advertised to other Brokers
+  int32 raftPort = 8;
+  // Generated once per process startup; retries must preserve it.
+  string incarnationId = 9;
+}
+
+// Acknowledges a committed Broker registration.
+message RegisterBrokerResponse {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the registered Broker identifier
+  string brokerId = 2;
+}
+
+// Renews one Broker registration and replaces its partition observations.
+message RenewBrokerRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+  // the stable Broker identifier
+  string brokerId = 2;
+  // the latest partition replica observations
+  repeated BrokerPartitionState partitions = 3;
+  string incarnationId = 4;
+  // Initialization lease renewal carries no readiness report.
+  bool preservePartitionObservations = 5;
+}
+
+// Acknowledges a committed Broker registration renewal.
+message RenewBrokerResponse {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the renewed Broker identifier
+  string brokerId = 2;
+}
+
+// Removes one Broker registration from PD.
+message DeregisterBrokerRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+  // the stable Broker identifier
+  string brokerId = 2;
+  string incarnationId = 3;
+}
+
+// Acknowledges a committed Broker deregistration.
+message DeregisterBrokerResponse {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the deregistered Broker identifier
+  string brokerId = 2;
+}
+
+// Registers one Job Worker and its activation configuration with PD.
+message RegisterWorkerRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+  // the tenant identifiers served by the Worker
+  repeated string tenantIds = 2;
+  // the stable Worker instance identifier
+  string workerId = 3;
+  // the Worker name
+  string name = 4;
+  // the Job type handled by the Worker
+  string jobType = 5;
+  // the maximum number of concurrently active Jobs
+  int32 maxJobsActive = 6;
+  // the number of Jobs currently active in the Worker
+  int32 activeJobs = 7;
+  // the Worker handler concurrency
+  int32 concurrency = 8;
+  // the Job activation timeout in milliseconds
+  int64 timeoutMillis = 9;
+  // the long-poll request timeout in milliseconds
+  int64 requestTimeoutMillis = 10;
+  // the delay between activation polls in milliseconds
+  int64 pollIntervalMillis = 11;
+  // the variables requested when Jobs are activated
+  repeated string fetchVariables = 12;
+  // the Worker client version
+  string clientVersion = 13;
+  // the Worker's local PD RPC timeout in milliseconds; PD controls the lease
+  int64 renewalTimeoutMillis = 14;
+}
+
+// Acknowledges a committed Worker registration.
+message RegisterWorkerResponse {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the tenant identifiers recorded for the Worker
+  repeated string tenantIds = 2;
+  // the registered Worker instance identifier
+  string workerId = 3;
+  // the registered Worker name
+  string name = 4;
+  // Stable positive token of the committed registration session.
+  int64 workerLeaseToken = 5;
+  // Authoritative service-side lease deadline in epoch milliseconds.
+  int64 leaseDeadlineEpochMillis = 6;
+}
+
+// Renews one Job Worker registration and replaces its activation configuration.
+message RenewWorkerRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+  // the tenant identifiers served by the Worker
+  repeated string tenantIds = 2;
+  // the stable Worker instance identifier
+  string workerId = 3;
+  // the Worker name
+  string name = 4;
+  // the Job type handled by the Worker
+  string jobType = 5;
+  // the maximum number of concurrently active Jobs
+  int32 maxJobsActive = 6;
+  // the number of Jobs currently active in the Worker
+  int32 activeJobs = 7;
+  // the Worker handler concurrency
+  int32 concurrency = 8;
+  // the Job activation timeout in milliseconds
+  int64 timeoutMillis = 9;
+  // the long-poll request timeout in milliseconds
+  int64 requestTimeoutMillis = 10;
+  // the delay between activation polls in milliseconds
+  int64 pollIntervalMillis = 11;
+  // the variables requested when Jobs are activated
+  repeated string fetchVariables = 12;
+  // the Worker client version
+  string clientVersion = 13;
+  // the Worker's local PD RPC timeout in milliseconds; PD controls the lease
+  int64 renewalTimeoutMillis = 14;
+  int64 workerLeaseToken = 15;
+}
+
+// Acknowledges a committed Worker registration renewal.
+message RenewWorkerResponse {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the tenant identifiers recorded for the Worker
+  repeated string tenantIds = 2;
+  // the renewed Worker instance identifier
+  string workerId = 3;
+  // the renewed Worker name
+  string name = 4;
+  int64 workerLeaseToken = 5;
+  int64 leaseDeadlineEpochMillis = 6;
+}
+
+// Removes one Job Worker registration from PD.
+message DeregisterWorkerRequest {
+  // the target Broker cluster identifier
+  string clusterId = 1;
+  // the tenant identifiers recorded for the Worker
+  repeated string tenantIds = 2;
+  // the stable Worker instance identifier
+  string workerId = 3;
+  // the Worker name
+  string name = 4;
+  int64 workerLeaseToken = 5;
+}
+
+// Acknowledges a committed Worker deregistration.
+message DeregisterWorkerResponse {
+  // the Broker cluster identifier
+  string clusterId = 1;
+  // the tenant identifiers removed with the registration
+  repeated string tenantIds = 2;
+  // the deregistered Worker instance identifier
+  string workerId = 3;
+  // the deregistered Worker name
+  string name = 4;
+}
+
+/*
+Provides the public typed control-plane API for Placement Driver clients.
+
+Common Errors:
+  FAILED_PRECONDITION:
+    - the request reached a follower that cannot route to the current leader
+  UNAVAILABLE:
+    - the Placement Driver runtime or current leader is unavailable
+*/
+service PlacementDriver {
+  /*
+  Creates an independent timer after validating its literal schedule and every required JobSubscription.
+  The schedule and PD system time zone are persisted for subsequent executions and recovery.
+  Each create allocates a new timer subscription key.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - clusterId or name is blank, or jobTypes is empty, blank or duplicated
+      - type or schedule is invalid, or variables is not a JSON object
+      - the schedule has no representable next execution
+    NOT_FOUND:
+      - the cluster does not exist
+      - any jobType lacks a fully created JobSubscription in the specified cluster and tenant
+      - a required JobSubscription is still being created or has been deleted
+  */
+  rpc CreateTimerSubscription(CreateTimerSubscriptionRequest)
+      returns (CreateTimerSubscriptionResponse);
+  rpc DeleteTimerSubscription(DeleteTimerSubscriptionRequest)
+      returns (DeleteTimerSubscriptionResponse);
+  rpc UpdatePlacementDriverTopology(UpdatePlacementDriverTopologyRequest)
+      returns (UpdatePlacementDriverTopologyResponse);
+
+  /*
+  Returns the committed topology configuration for one Broker cluster.
+
+  Errors:
+    NOT_FOUND:
+      - the target Broker cluster does not exist
+  */
+  rpc GetClusterConfig(GetClusterConfigRequest) returns (GetClusterConfigResponse);
+
+  /*
+  Returns the latest committed Broker topology for one cluster.
+
+  Errors:
+    NOT_FOUND:
+      - the target Broker cluster does not exist
+  */
+  rpc GetBrokerTopology(GetBrokerTopologyRequest) returns (BrokerTopology);
+
+  /*
+  Streams committed Broker topology updates for one cluster.
+  The stream remains open until the client cancels it or the server becomes unavailable.
+
+  Errors:
+    NOT_FOUND:
+      - the target Broker cluster does not exist
+  */
+  rpc WatchBrokerTopology(GetBrokerTopologyRequest) returns (stream BrokerTopology);
+
+  /*
+  Streams committed Placement Driver membership and leadership updates.
+  The stream remains open until the client cancels it or the server becomes unavailable.
+  */
+  rpc WatchPlacementDriverTopology(WatchPlacementDriverTopologyRequest)
+      returns (stream PlacementDriverTopology);
+
+  /*
+  Submits a typed request that PD must persist, coordinate, and distribute to Broker partitions.
+  This is the public entry point for operations that require PD-managed command distribution.
+  A successful response means the distribution was accepted by PD, not that every partition
+  has already acknowledged it.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - the distribution operation is missing, unsupported, or malformed
+    NOT_FOUND:
+      - the target Broker cluster or referenced resource does not exist
+    ALREADY_EXISTS:
+      - the request conflicts with an existing distribution deduplication key
+  */
+  rpc DistributeCommand(DistributeCommandRequest) returns (DistributeCommandResponse);
+
+  /*
+  Registers one Broker and commits its initial partition observations.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - the Broker identity, endpoint, lease, or partition observations are invalid
+    NOT_FOUND:
+      - the target Broker cluster does not exist
+  */
+  rpc RegisterBroker(RegisterBrokerRequest) returns (RegisterBrokerResponse);
+
+  /*
+  Renews one Broker registration and commits its latest partition observations.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - the Broker identity or partition observations are invalid
+    NOT_FOUND:
+      - the target Broker cluster or Broker registration does not exist
+  */
+  rpc RenewBroker(RenewBrokerRequest) returns (RenewBrokerResponse);
+
+  /*
+  Deregisters one Broker from PD.
+
+  Errors:
+    NOT_FOUND:
+      - the target Broker cluster or Broker registration does not exist
+  */
+  rpc DeregisterBroker(DeregisterBrokerRequest) returns (DeregisterBrokerResponse);
+
+  /*
+  Registers one Job Worker and commits its activation configuration.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - the Worker identity, lease, or activation configuration is invalid
+    NOT_FOUND:
+      - the target Broker cluster does not exist
+  */
+  rpc RegisterWorker(RegisterWorkerRequest) returns (RegisterWorkerResponse);
+
+  /*
+  Renews one Job Worker registration and commits its latest activation configuration.
+
+  Errors:
+    INVALID_ARGUMENT:
+      - the Worker identity or activation configuration is invalid
+    NOT_FOUND:
+      - the Worker registration does not exist
+  */
+  rpc RenewWorker(RenewWorkerRequest) returns (RenewWorkerResponse);
+
+  /*
+  Deregisters one Job Worker from PD.
+
+  Errors:
+    NOT_FOUND:
+      - the Worker registration does not exist
+  */
+  rpc DeregisterWorker(DeregisterWorkerRequest) returns (DeregisterWorkerResponse);
+}

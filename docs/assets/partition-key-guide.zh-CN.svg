@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-labelledby="title description">
+  <title id="title">Broker Key 的组成：1 位符号、4 位集群、9 位分区、50 位序号</title>
+  <desc id="description">Key 包含符号位、集群编号 clusterKey、分区编号 partitionId 和分区内序号 sequence。集群编号 0 为 PD 保留，1 到 15 用于 Broker 集群，每集群 511 个分区。分区直接编码实际编号 1 到 511，0 保留。实体序号从 1 开始。</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; fill: #19332A; }
+    .muted { fill: #62716B; }
+    .card { fill: #FFFFFF; stroke: #D5E2DB; }
+    .mono { font-family: "SFMono-Regular", Menlo, Consolas, monospace; }
+  </style>
+  <rect width="1000" height="320" fill="#F5F8F6"/>
+  <text x="50" y="48" font-size="28" font-weight="600">Broker Key：集群 · 分区 · 序号</text>
+  <text x="50" y="80" font-size="18" class="muted">系统自动生成的正整数标识 · 15 个 Broker 集群 · 每集群 511 个分区</text>
+  <rect x="50" y="108" width="14.0625" height="56" fill="#DCE5E0"/>
+  <rect x="64.0625" y="108" width="56.25" height="56" fill="#A4D5BC"/>
+  <rect x="120.3125" y="108" width="126.5625" height="56" fill="#66B28D"/>
+  <rect x="246.875" y="108" width="703.125" height="56" fill="#216844"/>
+  <text x="57" y="142" font-size="14" text-anchor="middle" class="mono">0</text>
+  <text x="92.1875" y="142" font-size="14" text-anchor="middle" class="mono">4 bit</text>
+  <text x="183.59375" y="142" font-size="17" text-anchor="middle" class="mono">9 bit</text>
+  <text x="598.4375" y="142" font-size="22" text-anchor="middle" style="fill:#FFFFFF">50 位分区内序号</text>
+  <rect class="card" x="50" y="192" width="156" height="96" rx="10"/>
+  <text x="66" y="225" font-size="19" font-weight="600">符号位 · 1 位</text>
+  <text x="66" y="258" font-size="17">固定为 0</text>
+  <rect class="card" x="230" y="192" width="224" height="96" rx="10"/>
+  <text x="248" y="225" font-size="19" font-weight="600">clusterKey · 4 位</text>
+  <text x="248" y="251" font-size="16">0：PD 保留</text>
+  <text x="248" y="276" font-size="16">1～15：Broker 集群</text>
+  <rect class="card" x="478" y="192" width="224" height="96" rx="10"/>
+  <text x="496" y="225" font-size="19" font-weight="600">分区编号 · 9 位</text>
+  <text x="496" y="258" font-size="17">实际编号 1～511</text>
+  <rect class="card" x="726" y="192" width="224" height="96" rx="10"/>
+  <text x="744" y="225" font-size="19" font-weight="600">递增序号 · 50 位</text>
+  <text x="744" y="258" font-size="17">实体从 1 开始</text>
+</svg>

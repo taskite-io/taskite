@@ -1,0 +1,132 @@
+# Distribution defaults.
+#
+# For complete configuration references, see the templates under src/main/config.
+
+server:
+  # HTTP port for the Placement Driver operations API; independent of its gRPC and Raft ports.
+  port: ${SERVER_PORT:19001}
+
+spring:
+  main:
+    # Print the Spring Boot startup banner to the console.
+    banner-mode: console
+  mvc:
+    # Raise an exception for unmapped HTTP requests so the API error handler can return a response.
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      # Disable Spring Boot's default static resource mappings.
+      add-mappings: false
+  jackson:
+    deserialization:
+      # Reject unknown JSON request fields instead of silently ignoring them.
+      fail-on-unknown-properties: true
+
+taskite:
+  # Placement Driver control-plane, consensus, storage and registration settings.
+  pd:
+    # Unique identity of this PD node; also used to derive the default data directory.
+    node-id: ${TASKITE_PD_NODE_ID:meta-0}
+    network:
+      # Advertised host reachable by PD peers and control-plane clients.
+      host: ${TASKITE_PD_NETWORK_HOST:127.0.0.1}
+      # Public control-plane gRPC port for topology, registration and management requests.
+      grpc-port: ${TASKITE_PD_NETWORK_GRPC_PORT:26501}
+      # Dedicated PD-to-PD Raft port; must differ from the gRPC port.
+      raft-port: ${TASKITE_PD_NETWORK_RAFT_PORT:26502}
+    consensus:
+      # Raft election timeout; must be greater than the heartbeat interval.
+      election-timeout: ${TASKITE_PD_CONSENSUS_ELECTION_TIMEOUT:1200ms}
+      # Interval between Raft heartbeats; independent of Broker and Worker renewal intervals.
+      heartbeat-interval: ${TASKITE_PD_CONSENSUS_HEARTBEAT_INTERVAL:300ms}
+      # Comma-separated nodeId@host:grpcPort:raftPort seed peers, excluding this node.
+      # Used for genesis/seed discovery; does not overwrite persisted runtime topology.
+      bootstrap-peers: ${TASKITE_PD_CONSENSUS_BOOTSTRAP_PEERS:}
+    storage:
+      # Persistent data directory; empty derives data/meta-cluster/{node-id}.
+      data-dir: ${TASKITE_PD_STORAGE_DATA_DIR:}
+      snapshot:
+        # Time-based snapshot trigger; zero disables this trigger.
+        interval: ${TASKITE_PD_STORAGE_SNAPSHOT_INTERVAL:15m}
+        # Raft log-size snapshot trigger; zero disables it. Either enabled trigger can start a snapshot.
+        log-size-threshold: ${TASKITE_PD_STORAGE_SNAPSHOT_LOG_SIZE_THRESHOLD:128MB}
+    # Maximum completed change records retained per PD resource or Broker cluster.
+    # Active changes are never removed by this limit.
+    change-history-limit: ${TASKITE_PD_CHANGE_HISTORY_LIMIT:50}
+    backpressure:
+      # Enable the shared per-partition window; management and maintenance commands bypass it.
+      enabled: ${TASKITE_PD_BACKPRESSURE_ENABLED:true}
+      # Concurrency-limit algorithm: aimd, vegas or fixed.
+      algorithm: ${TASKITE_PD_BACKPRESSURE_ALGORITHM:aimd}
+      aimd:
+        # Response-time threshold for reducing concurrency; this is not an RPC deadline.
+        request-timeout: ${TASKITE_PD_BACKPRESSURE_AIMD_REQUEST_TIMEOUT:200ms}
+        # Starting concurrent-request limit.
+        initial-limit: ${TASKITE_PD_BACKPRESSURE_AIMD_INITIAL_LIMIT:100}
+        # Lower bound of the adaptive concurrent-request limit.
+        min-limit: ${TASKITE_PD_BACKPRESSURE_AIMD_MIN_LIMIT:1}
+        # Upper bound of the adaptive concurrent-request limit.
+        max-limit: ${TASKITE_PD_BACKPRESSURE_AIMD_MAX_LIMIT:1000}
+        # Multiplicative reduction factor for slow responses or dropped requests.
+        backoff-ratio: ${TASKITE_PD_BACKPRESSURE_AIMD_BACKOFF_RATIO:0.9}
+      vegas:
+        # Starting concurrent-request limit.
+        initial-limit: ${TASKITE_PD_BACKPRESSURE_VEGAS_INITIAL_LIMIT:20}
+        # Estimated queue-size threshold below which concurrency can increase.
+        alpha: ${TASKITE_PD_BACKPRESSURE_VEGAS_ALPHA:3}
+        # Estimated queue-size threshold above which concurrency decreases.
+        beta: ${TASKITE_PD_BACKPRESSURE_VEGAS_BETA:6}
+        # Maximum concurrency allowed by the adaptive window.
+        max-limit: ${TASKITE_PD_BACKPRESSURE_VEGAS_MAX_LIMIT:1000}
+      fixed:
+        # Constant maximum number of concurrent requests per partition.
+        limit: ${TASKITE_PD_BACKPRESSURE_FIXED_LIMIT:20}
+    broker:
+      # PD-authoritative time without renewal before a Broker is marked OFFLINE.
+      lease-timeout: ${TASKITE_PD_BROKER_LEASE_TIMEOUT:30s}
+      client:
+        # Timeout per PD -> Broker RPC attempt for job subscription distribution and cluster changes.
+        request-timeout: ${TASKITE_PD_BROKER_CLIENT_REQUEST_TIMEOUT:5s}
+        # Maximum retries for refreshable routing/transport failures.
+        max-retries: ${TASKITE_PD_BROKER_CLIENT_MAX_RETRIES:2}
+    worker:
+      # PD-authoritative time without renewal before a Worker is marked OFFLINE.
+      lease-timeout: ${TASKITE_PD_WORKER_LEASE_TIMEOUT:30s}
+      # Retain OFFLINE Worker records for this duration before deleting them.
+      offline-retention: ${TASKITE_PD_WORKER_OFFLINE_RETENTION:10m}
+
+  # Gateway listeners, independent PD/Broker clients and authentication settings.
+  gateway:
+    network:
+      # Local bind address for the public Gateway gRPC listener.
+      host: ${TASKITE_GATEWAY_NETWORK_HOST:0.0.0.0}
+      # Public gRPC port used by clients and Workers.
+      port: ${TASKITE_GATEWAY_NETWORK_PORT:26500}
+      # Minimum client keepalive interval accepted by the Gateway.
+      min-keep-alive-interval: ${TASKITE_GATEWAY_NETWORK_MIN_KEEP_ALIVE_INTERVAL:30s}
+    placement-driver:
+      # Comma-separated PD gRPC endpoints in host:port or [ipv6]:port form.
+      endpoints: ${TASKITE_GATEWAY_PLACEMENT_DRIVER_ENDPOINTS:127.0.0.1:26501}
+      # Timeout for Gateway -> PD RPCs; independent of the Broker request timeout.
+      request-timeout: ${TASKITE_GATEWAY_PLACEMENT_DRIVER_REQUEST_TIMEOUT:10s}
+      # Interval between Broker topology refreshes through PD; must be at least 1s.
+      topology-refresh-interval: ${TASKITE_GATEWAY_PLACEMENT_DRIVER_TOPOLOGY_REFRESH_INTERVAL:5s}
+    broker:
+      # Timeout per Gateway -> Broker RPC attempt. Timed-out commands are not retried
+      # because their commit outcome may be unknown.
+      request-timeout: ${TASKITE_GATEWAY_BROKER_REQUEST_TIMEOUT:30s}
+      # Maximum retries for refreshable routing/transport failures.
+      max-retries: ${TASKITE_GATEWAY_BROKER_MAX_RETRIES:3}
+    threads:
+      # Management threads executing request actors and cluster coordination; must be positive.
+      management: ${TASKITE_GATEWAY_THREADS_MANAGEMENT:20}
+    multi-tenancy:
+      # Enable multi-tenancy; requires at least one configured authentication interceptor.
+      enabled: ${TASKITE_GATEWAY_MULTI_TENANCY_ENABLED:false}
+    interceptors:
+      # Interceptor ID; an entry with all three fields empty is ignored.
+      - id: ${TASKITE_GATEWAY_INTERCEPTORS_0_ID:}
+        # Fully qualified Java class implementing the Gateway interceptor.
+        class-name: ${TASKITE_GATEWAY_INTERCEPTORS_0_CLASS_NAME:}
+        # Interceptor JAR path, resolved relative to the process working directory.
+        jar-path: ${TASKITE_GATEWAY_INTERCEPTORS_0_JAR_PATH:}

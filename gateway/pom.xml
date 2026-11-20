@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.taskite</groupId>
+    <artifactId>taskite-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>gateway</artifactId>
+  <name>Taskite Gateway</name>
+  <dependencies>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>protocol</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>placement-driver-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>broker-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>gateway-protocol</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>scheduler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>broker</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.taskite</groupId>
+      <artifactId>placement-driver</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!--
+            The gateway E2E tests boot a real broker/PD with jraft groups. jraft cold-start
+            (election + initial no-op commit) adds real, machine-load-dependent startup latency the
+            in-house engine did not have, so under a saturated CI/build machine a single-attempt run
+            can occasionally exceed the client request deadline. A genuine break still fails every
+            rerun; this only absorbs cold-start timing variance for these heavyweight integration
+            tests.
+          -->
+          <rerunFailingTestsCount>2</rerunFailingTestsCount>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

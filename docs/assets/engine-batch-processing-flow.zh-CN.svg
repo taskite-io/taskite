@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" role="img" aria-labelledby="title desc">
+  <title id="title">Taskite Engine 批处理优化链路</title>
+  <desc id="desc">对比当前每个 follow-up command 跨提交边界的执行方式，以及目标的累计结果、有界 FIFO 和 command admission 批处理方式。</desc>
+
+  <defs>
+    <style>
+      .canvas { fill: #171717; }
+      .panel { fill: #1b1b1b; stroke: #3b3b3b; stroke-width: 2; }
+      .node { fill: #202020; stroke: #484848; stroke-width: 2; }
+      .node-focus { fill: #17271f; stroke: #32f08c; stroke-width: 3; }
+      .title { fill: #e5e5e5; font: 600 28px "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .label { fill: #e5e5e5; font: 600 23px "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .meta { fill: #a1a1aa; font: 400 18px "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .focus-label { fill: #e5fff2; font: 600 23px "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .focus-meta { fill: #baf2d4; font: 400 18px "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .badge { fill: #262626; stroke: #484848; stroke-width: 2; }
+      .badge-text { fill: #a1a1aa; font: 500 17px "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .arrow { fill: none; stroke: #a1a1aa; stroke-width: 3; stroke-linecap: round; marker-end: url(#arrow-neutral); }
+      .arrow-focus { fill: none; stroke: #32f08c; stroke-width: 4; stroke-linecap: round; marker-end: url(#arrow-brand); }
+    </style>
+    <marker id="arrow-neutral" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1 L7 4 L1 7 Z" fill="#a1a1aa"/>
+    </marker>
+    <marker id="arrow-brand" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1 L7 4 L1 7 Z" fill="#32f08c"/>
+    </marker>
+  </defs>
+
+  <rect class="canvas" width="1440" height="720"/>
+
+  <rect class="panel" x="56" y="46" width="1328" height="282" rx="12"/>
+  <text class="title" x="96" y="96">当前：每个 follow-up command 都跨提交边界</text>
+
+  <g>
+    <rect class="node" x="96" y="136" width="250" height="120" rx="8"/>
+    <text class="label" x="221" y="184" text-anchor="middle">命令提交</text>
+    <text class="meta" x="221" y="220" text-anchor="middle">Raft commit</text>
+  </g>
+  <path class="arrow" d="M346 196 H380"/>
+  <g>
+    <rect class="node" x="392" y="136" width="250" height="120" rx="8"/>
+    <text class="label" x="517" y="184" text-anchor="middle">处理一条命令</text>
+    <text class="meta" x="517" y="220" text-anchor="middle">Engine + state</text>
+  </g>
+  <path class="arrow" d="M642 196 H676"/>
+  <g>
+    <rect class="node" x="688" y="136" width="250" height="120" rx="8"/>
+    <text class="label" x="813" y="184" text-anchor="middle">结果提交</text>
+    <text class="meta" x="813" y="220" text-anchor="middle">event + command</text>
+  </g>
+  <path class="arrow" d="M938 196 H972"/>
+  <g>
+    <rect class="node" x="984" y="136" width="250" height="120" rx="8"/>
+    <text class="label" x="1109" y="184" text-anchor="middle">日志回读</text>
+    <text class="meta" x="1109" y="220" text-anchor="middle">完成响应</text>
+  </g>
+  <rect class="badge" x="692" y="274" width="242" height="40" rx="20"/>
+  <text class="badge-text" x="813" y="300" text-anchor="middle">后续命令再次循环</text>
+
+  <rect class="panel" x="56" y="374" width="1328" height="300" rx="12"/>
+  <text class="title" x="96" y="424">目标：生产化累计结果与有界 FIFO</text>
+
+  <g>
+    <rect class="node" x="96" y="464" width="250" height="120" rx="8"/>
+    <text class="label" x="221" y="512" text-anchor="middle">根命令提交</text>
+    <text class="meta" x="221" y="548" text-anchor="middle">一次 commit</text>
+  </g>
+  <path class="arrow-focus" d="M346 524 H380"/>
+  <g>
+    <rect class="node-focus" x="392" y="464" width="250" height="120" rx="8"/>
+    <text class="focus-label" x="517" y="512" text-anchor="middle">FIFO 批处理</text>
+    <text class="focus-meta" x="517" y="548" text-anchor="middle">admission 后必须执行</text>
+  </g>
+  <path class="arrow-focus" d="M642 524 H676"/>
+  <g>
+    <rect class="node" x="688" y="464" width="250" height="120" rx="8"/>
+    <text class="label" x="813" y="512" text-anchor="middle">批量日志提交</text>
+    <text class="meta" x="813" y="548" text-anchor="middle">Raft 后提交 DB</text>
+  </g>
+  <path class="arrow-focus" d="M938 524 H972"/>
+  <g>
+    <rect class="node" x="984" y="464" width="250" height="120" rx="8"/>
+    <text class="label" x="1109" y="512" text-anchor="middle">DB 提交后响应</text>
+    <text class="meta" x="1109" y="548" text-anchor="middle">无需等待回读</text>
+  </g>
+  <rect class="badge" x="352" y="604" width="330" height="40" rx="20"/>
+  <text class="badge-text" x="517" y="630" text-anchor="middle">未 admission 命令保留 continuation</text>
+</svg>

@@ -1,0 +1,348 @@
+# 可通过 apihub/http-client.env.json 切换环境。
+@changeId = 4f984b41-3f94-434c-9358-b2be29f592b8
+@partitionId = 3
+
+### Console 启动配置（发行包 PD HTTP 服务）
+GET {{CONSOLE_API_BASE}}/bootstrap
+Accept: application/json
+
+### PD 健康检查
+GET {{PD_API_BASE}}/health
+Accept: application/json
+
+### PD 拓扑
+GET {{PD_API_BASE}}/topology
+Accept: application/json
+
+### 查询 PD 成员配置
+GET {{PD_API_BASE}}/configuration
+Accept: application/json
+
+### 变更 PD 成员配置
+PATCH {{PD_API_BASE}}/configuration
+Content-Type: application/json
+Accept: application/json
+
+{
+  "add": [
+    "meta-3"
+  ],
+  "remove": [],
+  "count": 4
+}
+
+### 查询当前 PD 成员变更
+GET {{PD_API_BASE}}/changes/active
+Accept: application/json
+
+### 查询指定 PD 成员变更
+GET {{PD_API_BASE}}/changes/{{changeId}}
+Accept: application/json
+
+### 查询全部 Worker 列表
+GET {{WORKER_API_BASE}}
+Accept: application/json
+
+### 按集群查询 Worker 列表
+GET {{WORKER_API_BASE}}?cluster={{BROKER_CLUSTER}}
+Accept: application/json
+
+### 按集群、租户和名称查询 Worker 列表（筛选参数可独立使用）
+@workerTenant = default
+@workerName = payment-worker
+GET {{WORKER_API_BASE}}?cluster={{BROKER_CLUSTER}}&tenant={{workerTenant}}&name={{workerName}}
+Accept: application/json
+
+### 创建 Broker 集群
+POST {{BROKER_API_BASE}}/clusters
+Content-Type: application/json
+Accept: application/json
+
+{
+  "clusterId": "{{BROKER_CLUSTER}}",
+  "clusterSize": 3,
+  "partitionSize": 5,
+  "replicationFactor": 3
+}
+
+### 查询 Broker 集群列表
+GET {{BROKER_API_BASE}}/clusters
+Accept: application/json
+
+### 删除 Broker 集群
+DELETE {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}
+Accept: application/json
+
+### 查询 Broker 集群配置
+GET {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/configuration
+Accept: application/json
+
+### 完整变更 Broker 集群配置
+PATCH {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/configuration
+Content-Type: application/json
+Accept: application/json
+
+{
+  "brokers": {
+    "add": [
+
+    ],
+    "remove": [
+      "broker-0"
+    ]
+
+  }
+}
+
+### 按数量扩缩 Broker
+PATCH {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/configuration
+Content-Type: application/json
+Accept: application/json
+
+{
+  "brokers": {
+    "count": 5
+  }
+}
+
+### 增加分区
+PATCH {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/configuration
+Content-Type: application/json
+Accept: application/json
+
+{
+  "partitions": {
+    "count": 15
+  }
+}
+
+### 修改副本因子
+PATCH {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/configuration
+Content-Type: application/json
+Accept: application/json
+
+{
+  "partitions": {
+    "replicationFactor": 3
+  }
+}
+
+### 移除并 Drain Broker
+PATCH {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/configuration
+Content-Type: application/json
+Accept: application/json
+
+{
+  "brokers": {
+    "remove": [
+      "broker-3"
+    ]
+  }
+}
+
+### 查询 Broker 路由拓扑
+GET {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/topology
+Accept: application/json
+
+### 显式触发 Rebalance
+POST {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/rebalance
+Accept: application/json
+
+### Fenced Quorum Recovery
+POST {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/partitions/{{partitionId}}/quorum-recovery
+Content-Type: application/json
+Accept: application/json
+
+{
+  "confirm": "true",
+  "fencingProof": "ticket-1234",
+  "survivor": "broker-1"
+}
+
+### 查询当前 Broker 集群变更
+GET {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/changes/active
+Accept: application/json
+
+### 查询指定 Broker 集群变更
+GET {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/changes/{{changeId}}
+Accept: application/json
+
+### 取消指定 Broker 集群变更
+DELETE {{BROKER_API_BASE}}/clusters/{{BROKER_CLUSTER}}/changes/{{changeId}}
+Accept: application/json
+
+
+### 创建任务订阅 Mirror
+@targetClusterId = demo-2
+POST {{BROKER_API_BASE}}/job-subscription-mirrors
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sourceClusterId": "{{BROKER_CLUSTER}}",
+  "targetClusterId": "{{targetClusterId}}"
+}
+
+### 查询全部任务订阅 Mirror
+GET {{BROKER_API_BASE}}/job-subscription-mirrors
+Accept: application/json
+
+### 按源集群和目标集群查询任务订阅 Mirror
+GET {{BROKER_API_BASE}}/job-subscription-mirrors?sourceClusterId={{BROKER_CLUSTER}}&targetClusterId={{targetClusterId}}
+Accept: application/json
+
+### 查询指定任务订阅 Mirror
+@mirrorKey = 9007199254741046
+GET {{BROKER_API_BASE}}/job-subscription-mirrors/{{mirrorKey}}
+Accept: application/json
+
+### 删除指定任务订阅 Mirror
+DELETE {{BROKER_API_BASE}}/job-subscription-mirrors/{{mirrorKey}}
+Accept: application/json
+
+### 创建普通任务订阅（202：PD 受理；Broker 分区 ACK 异步完成）
+# @name jobSubscriptionCreate
+@subscriptionTenant = console-demo
+POST {{BROKER_API_BASE}}/job-subscriptions
+Content-Type: application/json
+Accept: application/json
+
+{
+  "clusterId": "{{BROKER_CLUSTER}}",
+  "tenantId": "{{subscriptionTenant}}",
+  "name": "payment-template",
+  "jobType": "payment",
+  "variables": "{\"currency\":\"CNY\"}",
+  "retries": 3,
+  "priority": 50
+}
+
+### 查询任务订阅分发进度
+# 下方原始创建 Key 应替换为 jobSubscriptionCreate 的 distributionKey，或 Gateway 创建响应的 key。
+# 接口与删除语义见 ../../placement-driver/README.md。
+@distributionKey = 9007199254741052
+GET {{BROKER_API_BASE}}/job-subscriptions/{{distributionKey}}
+Accept: application/json
+
+### 任务订阅列表
+GET {{BROKER_API_BASE}}/job-subscriptions?clusterId={{BROKER_CLUSTER}}
+Accept: application/json
+
+
+### 创建分发 Key 来自上述 HTTP 的 distributionKey 或 Gateway 的 key；按所属集群列出原生及 Mirror 订阅。
+@jobType = payment
+
+### 任务订阅列表（全量，无分页）
+GET {{BROKER_API_BASE}}/job-subscriptions
+Accept: application/json
+
+### 按任务类型精确查询
+GET {{BROKER_API_BASE}}/job-subscriptions?jobType={{jobType}}
+Accept: application/json
+
+### 按分发 Key 查询
+GET {{BROKER_API_BASE}}/job-subscriptions?distributionKey={{distributionKey}}
+Accept: application/json
+
+### 组合过滤：任务类型 + 分发 Key + 当前所属集群
+GET {{BROKER_API_BASE}}/job-subscriptions?jobType={{jobType}}&distributionKey={{distributionKey}}&clusterId={{BROKER_CLUSTER}}
+Accept: application/json
+
+### 查询目标集群订阅（creationType 区分 SUBSCRIPTION/MIRROR）
+GET {{BROKER_API_BASE}}/job-subscriptions?clusterId={{targetClusterId}}
+Accept: application/json
+
+### 普通订阅详情：任务模板、轮次、各目标分区 ACK 和待确认分区；独立定时配置使用 timer-subscriptions。
+# @name subscriptionDetail
+GET {{BROKER_API_BASE}}/job-subscriptions/{{distributionKey}}
+Accept: application/json
+
+### 重新下发订阅（先执行上方 subscriptionDetail，取最新 generation）
+### 202 仅代表受理，继续查询详情查看 ACK；旧轮次/已删除返回 409。
+### 保留原 Key 和任务模板；目标使用已记录集群的当前分区范围。
+POST {{BROKER_API_BASE}}/job-subscriptions/{{distributionKey}}/redistribute
+Content-Type: application/json
+Accept: application/json
+
+{
+  "expectedGeneration": "{{subscriptionDetail.response.body.$.generation}}"
+}
+
+### 创建单次定时任务（201；先确认当前集群/租户的 payment 订阅已完成分发）
+POST {{BROKER_API_BASE}}/timer-subscriptions
+Content-Type: application/json
+Accept: application/json
+
+{
+  "clusterId": "{{BROKER_CLUSTER}}",
+  "tenantId": "{{subscriptionTenant}}",
+  "name": "payment-after-30-seconds",
+  "type": "DURATION",
+  "expression": "PT30S",
+  "jobTypes": ["payment"],
+  "variables": "{}"
+}
+
+### 创建循环定时任务（每分钟一次，共 5 次；R/PT1M 表示无限循环）
+# @name timerSubscriptionCreate
+POST {{BROKER_API_BASE}}/timer-subscriptions
+Content-Type: application/json
+Accept: application/json
+
+{
+  "clusterId": "{{BROKER_CLUSTER}}",
+  "tenantId": "{{subscriptionTenant}}",
+  "name": "payment-five-times",
+  "type": "CYCLE",
+  "expression": "R5/PT1M",
+  "jobTypes": ["payment"],
+  "variables": "{}"
+}
+
+### 创建 Cron 定时任务（Spring 5.3 六字段：秒、分、时、日、月、星期）
+POST {{BROKER_API_BASE}}/timer-subscriptions
+Content-Type: application/json
+Accept: application/json
+
+{
+  "clusterId": "{{BROKER_CLUSTER}}",
+  "tenantId": "{{subscriptionTenant}}",
+  "name": "payment-every-five-minutes",
+  "type": "CRON",
+  "expression": "0 */5 * * * *",
+  "jobTypes": ["payment"],
+  "variables": "{}"
+}
+
+### 创建单次延迟定时任务（DURATION，30 秒后执行）
+POST {{BROKER_API_BASE}}/timer-subscriptions
+Content-Type: application/json
+Accept: application/json
+
+{
+  "clusterId": "{{BROKER_CLUSTER}}",
+  "tenantId": "{{subscriptionTenant}}",
+  "name": "payment-delay",
+  "type": "DURATION",
+  "expression": "PT30S",
+  "jobTypes": ["payment"],
+  "variables": "{\"amount\":100}"
+}
+
+### 查询当前仍在调度的定时任务（无服务端筛选/分页；已完成或已取消计划不在列表）
+GET {{BROKER_API_BASE}}/timer-subscriptions
+Accept: application/json
+
+### 删除普通任务（202；作用域必须是源集群与原租户）
+# path 使用原始创建 Key。响应 distributionKey 属于删除计划，不替换原始 Key。
+# 删除异步清理源及 Mirror 目标集群的关联 Job、Incident 和变量。
+# 继续查询上方 subscriptionDetail，查看原始创建 Key 的 DELETING/DELETED 状态。
+DELETE {{BROKER_API_BASE}}/job-subscriptions/{{distributionKey}}?clusterId={{BROKER_CLUSTER}}&tenantId={{subscriptionTenant}}
+Accept: application/json
+
+### 删除定时任务（200；只停止后续调度，不撤回已创建或已发出的 Job）
+# 替换为实际创建响应的 timerSubscriptionKey；不存在或作用域不匹配返回 404。
+# 默认租户在 query 中使用 tenantId=%3Cdefault%3E，其他包含特殊字符的租户也需 URL 编码。
+@timerSubscriptionKey = 9007199254741099
+DELETE {{BROKER_API_BASE}}/timer-subscriptions/{{timerSubscriptionKey}}?clusterId={{BROKER_CLUSTER}}&tenantId={{subscriptionTenant}}
+Accept: application/json

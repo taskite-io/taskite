@@ -1,0 +1,140 @@
+Taskite Community License
+Version 1.0, September 2026
+
+Copyright (c) 2026 lzgabel and Taskite contributors
+
+This Taskite Community License (the "Agreement") sets out the terms on which
+the copyright holders of Taskite (each a "Licensor") make the Software
+available. By downloading, accessing, using, modifying, or distributing the
+Software, You accept this Agreement. If You act for an organization, You
+represent that You have authority to bind that organization.
+
+1. Definitions
+
+"Software" means all Taskite source code, object code, documentation,
+configuration, schemas, assets, and accompanying materials distributed with
+this Agreement, except material identified as third-party material.
+
+"You" means the individual or legal entity exercising rights under this
+Agreement.
+
+"Non-Commercial Use" means use solely for personal, educational, academic,
+independent research, testing, or charitable purposes, without direct or
+indirect commercial advantage or monetary compensation.
+
+"Evaluation Use" means internal, non-production use by a commercial
+organization solely to determine whether to obtain a commercial license.
+Evaluation Use must not operate a production workload, provide a service to
+another party, or support revenue-generating activity.
+
+"Permitted Use" means Non-Commercial Use or Evaluation Use.
+
+"Commercial Use" means any use primarily intended for or directed toward
+commercial advantage, monetary compensation, revenue generation, or the
+internal production operations of a for-profit business. Commercial Use
+includes use by an employee, contractor, or service provider for the benefit
+of a commercial organization, except for Evaluation Use that satisfies every
+condition in its definition.
+
+2. Non-Commercial License Grant
+
+Subject to this Agreement, each Licensor grants You a worldwide,
+non-exclusive, royalty-free, non-transferable license to use, reproduce,
+modify, and distribute the Software and derivative works solely for
+Permitted Use. You may provide copies to another person only under this
+Agreement and may not grant broader rights than this Agreement grants You.
+
+3. Conditions
+
+When You distribute the Software or a derivative work, You must:
+
+(a) include a complete copy of this Agreement;
+
+(b) retain all copyright, attribution, trademark, patent, and license notices;
+
+(c) identify files that You materially modified; and
+
+(d) provide the corresponding source code of the distributed Software and
+Your modifications in the preferred form for making changes, at no charge
+other than reasonable delivery costs.
+
+4. Commercial Uses Requiring a Separate License
+
+The license in Section 2 does not grant any right to make Commercial Use of
+the Software. Without limiting that rule, a separate written commercial
+license is required to:
+
+(a) operate, embed, distribute, resell, or make the Software available as part
+of a hosted service, managed service, product, or paid offering;
+
+(b) use the Software in the internal production operations of a for-profit
+business;
+
+(c) provide third parties with access to the Software or its APIs for a
+commercial purpose.
+
+Commercial licenses may be requested from lz19960321lz@gmail.com.
+
+5. Generated API Code
+
+Code generated from an API definition may be subject to a separate written
+clarification distributed with that API definition.
+
+6. Patent Grant
+
+Subject to this Agreement, each Licensor grants You a worldwide,
+non-exclusive, royalty-free patent license, limited to Permitted Use, for
+patent claims controlled by that Licensor that are necessarily infringed by
+the Licensor's contribution alone or by its combination with the Software. If
+You initiate patent litigation alleging that the Software or a contribution
+infringes a patent, all patent licenses granted to You under this Agreement
+terminate immediately.
+
+7. Third-Party Materials
+
+This Agreement does not replace or modify licenses for third-party software,
+documentation, assets, or dependencies. Materials identified in
+THIRD_PARTY_NOTICES.md or carrying their own license notice remain governed by
+their respective terms.
+
+8. Trademarks
+
+This Agreement does not grant rights to use the Taskite name, logos, service
+marks, or other brand features except as reasonably necessary to describe the
+origin of unmodified copies and reproduce required notices.
+
+9. Termination
+
+Your rights under this Agreement terminate automatically and immediately if
+You breach it. If the breach is curable, Your rights are reinstated
+provisionally when You cease the breach and permanently if the Licensor does
+not notify You of the breach within 60 days after cessation. A first-time
+notice of a curable breach permanently reinstates Your rights if You cure the
+breach within 30 days after receiving notice.
+
+10. Disclaimer of Warranty
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS",
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+WARRANTIES OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A
+PARTICULAR PURPOSE. YOU ARE SOLELY RESPONSIBLE FOR DETERMINING WHETHER YOUR USE
+IS PERMITTED AND APPROPRIATE.
+
+11. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, NO LICENSOR OR CONTRIBUTOR WILL BE
+LIABLE UNDER ANY LEGAL THEORY FOR ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL,
+CONSEQUENTIAL, OR EXEMPLARY DAMAGES ARISING FROM THE SOFTWARE OR THIS
+AGREEMENT, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+12. General
+
+This Agreement is the entire agreement for the rights granted here. A waiver
+must be in writing. If a provision is unenforceable, it will be modified only
+to the minimum extent necessary, and the remaining provisions will continue
+in effect. Nothing in this Agreement limits liability that cannot lawfully be
+limited.
+
+This is a source-available license and is not an Open Source Initiative
+approved license. The term "Community License" does not mean that the Software
+is open source under the Open Source Definition.

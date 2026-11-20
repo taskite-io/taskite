@@ -1,0 +1,12 @@
+Taskite
+Copyright (c) 2026 lzgabel and Taskite contributors
+
+Taskite is distributed under the Taskite Community License, Version 1.0.
+Commercial use requires a separate written license. See LICENSE.
+
+The Taskite name and logos are not licensed for general use. See LICENSE,
+Section 8.
+
+This repository references third-party materials that are not covered by the
+Taskite Community License. See THIRD_PARTY_NOTICES.md and the notices shipped
+with third-party dependencies.

@@ -1,0 +1,134 @@
+# Placement Driver configuration file.
+
+# ! ! ! ! ! ! ! ! ! !
+# To activate this file, copy or rename it to application.yaml and place it in a Spring
+# configuration location, for example ./config/application.yaml.
+# ! ! ! ! ! ! ! ! ! !
+
+# Spring Boot configuration precedence applies. Command-line arguments override environment
+# variables, which override this file. An external file can be selected with
+# --spring.config.location or added with --spring.config.additional-location.
+
+# Conventions ----------------------------------------
+#
+# Time values use duration suffixes such as 300ms, 5s, and 10m.
+#
+# Relative paths are resolved against the process working directory.
+#
+# Bootstrap peers use a comma-separated nodeId@host:grpcPort:raftPort string. Each node lists only
+# the other placement-driver nodes. PD_PEERS is used for genesis/seed discovery only; normal
+# restarts prefer ${pd.data-dir}/.topology and recover authoritative membership through JRaft.
+# Example: peers: "meta-1@127.0.0.1:29002:29102,meta-2@127.0.0.1:29003:29103"
+#
+# ----------------------------------------------------
+
+server:
+  # Sets the HTTP port for the placement-driver operations API.
+  # This setting can also be overridden with the environment variable SERVER_PORT.
+  port: ${SERVER_PORT:19001}
+
+spring:
+  main:
+    banner-mode: off
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+management:
+  # Actuator uses the placement-driver HTTP port by default. Set management.server.port to expose
+  # it on a dedicated port.
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      enabled: true
+      show-details: never
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+taskite:
+  console:
+    # Presentation layer served at /console/ by the distribution.
+    enabled: ${TASKITE_CONSOLE_ENABLED:true}
+    # Change this identifier when rebuilding a cluster to isolate browser change records.
+    deployment-id: ${TASKITE_CONSOLE_DEPLOYMENT_ID:}
+  pd:
+    # Sets the unique ID of this placement-driver node.
+    # This setting can also be overridden with the environment variable TASKITE_PD_NODE_ID.
+    node-id: ${TASKITE_PD_NODE_ID:meta-0}
+    network:
+      # Advertised address reachable by every PD node.
+      host: ${TASKITE_PD_NETWORK_HOST:127.0.0.1}
+      grpc-port: ${TASKITE_PD_NETWORK_GRPC_PORT:26501}
+      raft-port: ${TASKITE_PD_NETWORK_RAFT_PORT:26502}
+    consensus:
+      # Election timeout must be greater than the heartbeat interval.
+      # Environments: TASKITE_PD_CONSENSUS_ELECTION_TIMEOUT, TASKITE_PD_CONSENSUS_HEARTBEAT_INTERVAL
+      election-timeout: ${TASKITE_PD_CONSENSUS_ELECTION_TIMEOUT:1200ms}
+      heartbeat-interval: ${TASKITE_PD_CONSENSUS_HEARTBEAT_INTERVAL:300ms}
+      # Sets genesis/seed placement-driver members as a comma-separated
+      # nodeId@host:grpcPort:raftPort string. Do not include the local node. This value does not
+      # overwrite persisted runtime topology.
+      # This setting can also be overridden with the environment variable TASKITE_PD_CONSENSUS_BOOTSTRAP_PEERS.
+      # The introductory PD_PEERS/peers example uses the former names; this is the current entry.
+      # Example: "meta-1@127.0.0.1:26503:26504,meta-2@127.0.0.1:26505:26506"
+      bootstrap-peers: ${TASKITE_PD_CONSENSUS_BOOTSTRAP_PEERS:}
+    storage:
+      # Sets the data directory. Leave it empty to use data/meta-cluster/{node-id}.
+      # This setting can also be overridden with the environment variable TASKITE_PD_STORAGE_DATA_DIR.
+      data-dir: ${TASKITE_PD_STORAGE_DATA_DIR:}
+      snapshot:
+        # Snapshot when either trigger is reached. One trigger may be disabled with zero.
+        # Environments: TASKITE_PD_STORAGE_SNAPSHOT_INTERVAL, TASKITE_PD_STORAGE_SNAPSHOT_LOG_SIZE_THRESHOLD
+        interval: ${TASKITE_PD_STORAGE_SNAPSHOT_INTERVAL:15m}
+        log-size-threshold: ${TASKITE_PD_STORAGE_SNAPSHOT_LOG_SIZE_THRESHOLD:128MB}
+    # Maximum completed change records retained per PD resource or Broker cluster.
+    # Active changes are never removed. This setting can also be overridden with the
+    # environment variable TASKITE_PD_CHANGE_HISTORY_LIMIT.
+    change-history-limit: ${TASKITE_PD_CHANGE_HISTORY_LIMIT:50}
+    # One shared partition window for user distribution, registration and renewal.
+    # Management and internal maintenance always bypass this window.
+    backpressure:
+      enabled: ${TASKITE_PD_BACKPRESSURE_ENABLED:true}
+      # Supported algorithms: aimd, vegas, fixed.
+      algorithm: ${TASKITE_PD_BACKPRESSURE_ALGORITHM:aimd}
+      aimd:
+        request-timeout: ${TASKITE_PD_BACKPRESSURE_AIMD_REQUEST_TIMEOUT:200ms}
+        initial-limit: ${TASKITE_PD_BACKPRESSURE_AIMD_INITIAL_LIMIT:100}
+        min-limit: ${TASKITE_PD_BACKPRESSURE_AIMD_MIN_LIMIT:1}
+        max-limit: ${TASKITE_PD_BACKPRESSURE_AIMD_MAX_LIMIT:1000}
+        backoff-ratio: ${TASKITE_PD_BACKPRESSURE_AIMD_BACKOFF_RATIO:0.9}
+      vegas:
+        initial-limit: ${TASKITE_PD_BACKPRESSURE_VEGAS_INITIAL_LIMIT:20}
+        alpha: ${TASKITE_PD_BACKPRESSURE_VEGAS_ALPHA:3}
+        beta: ${TASKITE_PD_BACKPRESSURE_VEGAS_BETA:6}
+        max-limit: ${TASKITE_PD_BACKPRESSURE_VEGAS_MAX_LIMIT:1000}
+      fixed:
+        limit: ${TASKITE_PD_BACKPRESSURE_FIXED_LIMIT:20}
+    broker:
+      # Time without a Broker renewal before the PD Leader marks it OFFLINE.
+      # Environment: TASKITE_PD_BROKER_LEASE_TIMEOUT
+      lease-timeout: ${TASKITE_PD_BROKER_LEASE_TIMEOUT:30s}
+      client:
+        # Applies to job subscription distribution and cluster-change RPCs from PD to Broker.
+        request-timeout: ${TASKITE_PD_BROKER_CLIENT_REQUEST_TIMEOUT:5s}
+        max-retries: ${TASKITE_PD_BROKER_CLIENT_MAX_RETRIES:2}
+    worker:
+      # Time without a Worker heartbeat before the PD Leader marks it OFFLINE.
+      # Environment: TASKITE_PD_WORKER_LEASE_TIMEOUT
+      lease-timeout: ${TASKITE_PD_WORKER_LEASE_TIMEOUT:30s}
+      # Retention period for OFFLINE Worker records before deletion.
+      # Environment: TASKITE_PD_WORKER_OFFLINE_RETENTION
+      offline-retention: ${TASKITE_PD_WORKER_OFFLINE_RETENTION:10m}

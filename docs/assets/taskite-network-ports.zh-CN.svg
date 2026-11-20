@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1140" viewBox="0 0 2200 1140" role="img" aria-labelledby="title desc">
+  <title id="title">Taskite 业务、共识与心跳链路</title>
+  <desc id="desc">展示 Client、Worker、Gateway、Broker 和 Placement Driver 之间的业务请求、拓扑轮询与监听、Raft 共识以及 Worker 和 Broker 心跳上报路径。</desc>
+  <style>
+    .bg { fill: #171717; }
+    .frame { fill: none; stroke: #343434; stroke-width: 2; }
+    .node { fill: #1b1b1b; stroke: #3b3b3b; stroke-width: 2; }
+    .title { fill: #e5e5e5; font: 600 32px "PingFang SC", "SF Pro Text", sans-serif; }
+    .subtitle { fill: #a1a1aa; font: 400 22px "PingFang SC", "SF Pro Text", sans-serif; }
+    .node-title { fill: #e5e5e5; font: 500 25px "PingFang SC", "SF Pro Text", sans-serif; }
+    .node-meta { fill: #a1a1aa; font: 400 20px "PingFang SC", "SF Pro Text", sans-serif; }
+    .node-code { fill: #e5e5e5; font: 500 24px "SF Mono", Menlo, monospace; }
+    .edge { fill: none; stroke: #a1a1aa; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .edge-dashed { fill: none; stroke: #a1a1aa; stroke-width: 4; stroke-dasharray: 13 11; stroke-linecap: round; stroke-linejoin: round; }
+    .edge-raft { fill: none; stroke: #32f08c; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+    .edge-heartbeat { fill: none; stroke: #80c1ff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+    .arrow-neutral { fill: #a1a1aa; }
+    .arrow-raft { fill: #32f08c; }
+    .arrow-heartbeat { fill: #80c1ff; }
+    .label-box { fill: #171717; stroke: #424242; stroke-width: 1.5; }
+    .label-box-raft { fill: #171717; stroke: #32f08c; stroke-width: 1.5; }
+    .label-box-heartbeat { fill: #171717; stroke: #80c1ff; stroke-width: 1.5; }
+    .label { fill: #e5e5e5; font: 500 19px "PingFang SC", "SF Pro Text", sans-serif; }
+    .label-raft { fill: #e5fff2; font: 500 19px "PingFang SC", "SF Pro Text", sans-serif; }
+    .label-heartbeat { fill: #bfe0ff; font: 500 19px "PingFang SC", "SF Pro Text", sans-serif; }
+    .legend { fill: #262626; stroke: #424242; stroke-width: 1.5; }
+    .legend-text { fill: #e5e5e5; font: 500 19px "PingFang SC", "SF Pro Text", sans-serif; }
+    .legend-muted { fill: #a1a1aa; font: 400 18px "PingFang SC", "SF Pro Text", sans-serif; }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="2200" height="1140" rx="24"/>
+  <rect class="frame" x="1" y="1" width="2198" height="1138" rx="24"/>
+  <text class="title" x="60" y="72">Taskite 业务、共识与心跳链路</text>
+  <text class="subtitle" x="60" y="120">浅蓝色表示 Worker / Broker 注册、续约和注销上报</text>
+
+  <rect class="node" x="60" y="190" width="280" height="180" rx="18"/>
+  <text class="node-title" x="200" y="250" text-anchor="middle">Client</text>
+  <text class="node-meta" x="200" y="300" text-anchor="middle">外部业务请求</text>
+
+  <rect class="node" x="520" y="190" width="280" height="180" rx="18"/>
+  <text class="node-title" x="660" y="240" text-anchor="middle">Gateway</text>
+  <text class="node-code" x="660" y="290" text-anchor="middle">:26500</text>
+  <text class="node-meta" x="660" y="335" text-anchor="middle">Gateway API</text>
+
+  <rect class="node" x="1040" y="190" width="320" height="180" rx="18"/>
+  <text class="node-title" x="1200" y="240" text-anchor="middle">Broker Leader</text>
+  <text class="node-code" x="1200" y="290" text-anchor="middle">gRPC :26501</text>
+  <text class="node-meta" x="1200" y="335" text-anchor="middle">Command API</text>
+
+  <rect class="node" x="1740" y="190" width="320" height="180" rx="18"/>
+  <text class="node-title" x="1900" y="240" text-anchor="middle">Broker Follower</text>
+  <text class="node-code" x="1900" y="290" text-anchor="middle">Raft :26502</text>
+  <text class="node-meta" x="1900" y="335" text-anchor="middle">业务分区共识副本</text>
+
+  <rect class="node" x="420" y="720" width="280" height="180" rx="18"/>
+  <text class="node-title" x="560" y="780" text-anchor="middle">Worker</text>
+  <text class="node-meta" x="560" y="830" text-anchor="middle">Job API 与心跳来源</text>
+
+  <rect class="node" x="1000" y="720" width="400" height="220" rx="18"/>
+  <text class="node-title" x="1200" y="780" text-anchor="middle">Placement Driver Leader</text>
+  <text class="node-code" x="1200" y="835" text-anchor="middle">gRPC :26501</text>
+  <text class="node-meta" x="1200" y="885" text-anchor="middle">注册、续约、拓扑与状态处理</text>
+
+  <rect class="node" x="1740" y="720" width="320" height="220" rx="18"/>
+  <text class="node-title" x="1900" y="780" text-anchor="middle">PD Follower</text>
+  <text class="node-code" x="1900" y="835" text-anchor="middle">Raft :26502</text>
+  <text class="node-meta" x="1900" y="885" text-anchor="middle">控制面共识副本</text>
+
+  <path class="edge" d="M352 280 H488"/>
+  <path class="arrow-neutral" d="M488 268 L508 280 L488 292 Z"/>
+  <rect class="label-box" x="382" y="230" width="88" height="34" rx="10"/>
+  <text class="label" x="426" y="255" text-anchor="middle">gRPC</text>
+
+  <path class="edge" d="M812 280 H1008"/>
+  <path class="arrow-neutral" d="M1008 268 L1028 280 L1008 292 Z"/>
+  <rect class="label-box" x="846" y="230" width="140" height="34" rx="10"/>
+  <text class="label" x="916" y="255" text-anchor="middle">gRPC + SBE</text>
+
+  <path class="edge-raft" d="M1372 280 H1708"/>
+  <path class="arrow-raft" d="M1708 268 L1728 280 L1708 292 Z"/>
+  <rect class="label-box-raft" x="1487" y="230" width="120" height="34" rx="10"/>
+  <text class="label-raft" x="1547" y="255" text-anchor="middle">JRaft RPC</text>
+
+  <path class="edge" d="M560 708 V402"/>
+  <path class="arrow-neutral" d="M548 402 L560 382 L572 402 Z"/>
+  <rect class="label-box" x="444" y="500" width="100" height="34" rx="10"/>
+  <text class="label" x="494" y="523" text-anchor="middle">Job API</text>
+
+  <path class="edge" d="M740 402 V592 Q740 620 768 620 H1052 Q1080 620 1080 648 V688"/>
+  <path class="arrow-neutral" d="M728 402 L740 382 L752 402 Z"/>
+  <path class="arrow-neutral" d="M1068 688 L1080 708 L1092 688 Z"/>
+  <rect class="label-box" x="780" y="636" width="260" height="34" rx="10"/>
+  <text class="label" x="910" y="659" text-anchor="middle">Topology poll &amp; watch</text>
+
+  <path class="edge-dashed" d="M1240 708 V402"/>
+  <path class="arrow-neutral" d="M1228 402 L1240 382 L1252 402 Z"/>
+  <rect class="label-box" x="1256" y="500" width="160" height="36" rx="10"/>
+  <text class="label" x="1336" y="524" text-anchor="middle">Topology op</text>
+
+  <path class="edge-heartbeat" d="M712 810 H968"/>
+  <path class="arrow-heartbeat" d="M968 798 L988 810 L968 822 Z"/>
+  <rect class="label-box-heartbeat" x="756" y="758" width="180" height="36" rx="10"/>
+  <text class="label-heartbeat" x="846" y="782" text-anchor="middle">Worker heartbeat</text>
+
+  <path class="edge-heartbeat" d="M1160 382 V688"/>
+  <path class="arrow-heartbeat" d="M1148 688 L1160 708 L1172 688 Z"/>
+  <rect class="label-box-heartbeat" x="944" y="500" width="200" height="36" rx="10"/>
+  <text class="label-heartbeat" x="1044" y="524" text-anchor="middle">Leader heartbeat</text>
+
+  <path class="edge-heartbeat" d="M1900 382 V592 Q1900 620 1872 620 H1348 Q1320 620 1320 648 V688"/>
+  <path class="arrow-heartbeat" d="M1308 688 L1320 708 L1332 688 Z"/>
+  <rect class="label-box-heartbeat" x="1596" y="636" width="220" height="36" rx="10"/>
+  <text class="label-heartbeat" x="1706" y="660" text-anchor="middle">Follower heartbeat</text>
+
+  <path class="edge-raft" d="M1412 880 H1708"/>
+  <path class="arrow-raft" d="M1708 868 L1728 880 L1708 892 Z"/>
+  <rect class="label-box-raft" x="1506" y="828" width="120" height="36" rx="10"/>
+  <text class="label-raft" x="1566" y="854" text-anchor="middle">JRaft RPC</text>
+
+  <rect class="legend" x="60" y="1000" width="2080" height="112" rx="16"/>
+  <path class="edge" d="M120 1044 H188"/>
+  <path class="arrow-neutral" d="M188 1036 L200 1044 L188 1052 Z"/>
+  <text class="legend-text" x="224" y="1052">请求 / 拓扑读取</text>
+  <path class="edge-dashed" d="M620 1044 H688"/>
+  <path class="arrow-neutral" d="M688 1036 L700 1044 L688 1052 Z"/>
+  <text class="legend-text" x="724" y="1052">拓扑控制</text>
+  <path class="edge-raft" d="M1120 1044 H1188"/>
+  <path class="arrow-raft" d="M1188 1036 L1200 1044 L1188 1052 Z"/>
+  <text class="legend-text" x="1224" y="1052">Raft 共识</text>
+  <path class="edge-heartbeat" d="M1620 1044 H1688"/>
+  <path class="arrow-heartbeat" d="M1688 1036 L1700 1044 L1688 1052 Z"/>
+  <text class="legend-text" x="1724" y="1052">心跳上报</text>
+  <text class="legend-muted" x="120" y="1090">心跳生命周期：REGISTER → RENEW → DEREGISTER；异常退出由 PD lease 超时标记 OFFLINE。</text>
+
+</svg>

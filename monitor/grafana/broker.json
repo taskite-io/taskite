@@ -1,0 +1,2780 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "General Overview - $cluster",
+      "type": "row",
+      "repeat": "cluster"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Online Brokers, deduplicated across placement-driver scrape targets.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "count by (cluster) (max by (cluster, broker) (taskite_pd_broker_status{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",status=\"ONLINE\"}))",
+          "instant": true,
+          "legendFormat": "{{cluster}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Online Brokers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Healthy partitions reported by the current placement-driver Leader. Recovered voters remain active while processing a transient backlog.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster) (min by (cluster, partition) (taskite_pd_partition_health{pd_node=~\"$pd_node\",cluster=~\"$cluster\",partition=~\"$partition\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3)))",
+          "instant": true,
+          "legendFormat": "{{cluster}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Healthy Partitions",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Managed Broker clusters whose configured partitions are all healthy according to the current placement-driver Leader.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "min by (cluster) (taskite_pd_broker_cluster_health{pd_node=~\"$pd_node\",cluster=~\"$cluster\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "instant": true,
+          "legendFormat": "{{cluster}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Healthy Broker Clusters",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster) (taskite_pending_incidents{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "instant": false,
+          "legendFormat": "{{cluster}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pending Incidents",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Current Broker role for each partition",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "mode": "basic",
+              "type": "color-background"
+            },
+            "inspect": false
+          },
+          "links": [],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "super-light-red",
+                  "index": 0,
+                  "text": "Unknown"
+                },
+                "1": {
+                  "color": "super-light-orange",
+                  "index": 1,
+                  "text": "Follower"
+                },
+                "2": {
+                  "color": "super-light-purple",
+                  "index": 2,
+                  "text": "Candidate"
+                },
+                "3": {
+                  "color": "light-green",
+                  "index": 3,
+                  "text": "Leader"
+                },
+                "4": {
+                  "color": "light-blue",
+                  "index": 4,
+                  "text": "Learner"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cluster"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "broker"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 6
+      },
+      "id": 23,
+      "interval": "1s",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max by (cluster, partition, broker) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"})",
+          "format": "time_series",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{cluster}} {{broker}} p{{partition}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Partition Leader",
+      "transformations": [
+        {
+          "id": "joinByLabels",
+          "options": {
+            "join": [
+              "cluster",
+              "broker"
+            ],
+            "value": "partition"
+          }
+        },
+        {
+          "id": "seriesToRows",
+          "options": {}
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Partition health reported by the current placement-driver Leader: one Leader and an active voter quorum at the same term. Transient processing backlog does not make a recovered voter unhealthy.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "Unhealthy"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "Healthy"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "min by (cluster, partition) (taskite_pd_partition_health{pd_node=~\"$pd_node\",cluster=~\"$cluster\",partition=~\"$partition\"} and on(pd_node) (taskite_pd_raft_role{pd_node=~\"$pd_node\"} == 3))",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cluster}} p{{partition}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Partition Health",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster) (rate(taskite_stream_processor_records_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",action=\"processed\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Processed Records / s",
+      "type": "stat",
+      "description": "Processed record throughput from Leader partitions only."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 14
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster) (rate(taskite_job_events_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",action=\"completed\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Completed Jobs / s",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.001
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 14
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster) (rate(taskite_job_events_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",action=\"failed\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Jobs / s",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 19
+      },
+      "id": 52,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "taskite_stream_processor_record_count{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",state=\"pending\"} and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pending Records by Partition",
+      "type": "timeseries",
+      "description": "Current unprocessed record backlog for each Leader partition. This is a Gauge sampled at each scrape, not a counter or interval rate."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 19
+      },
+      "id": 36,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "taskite_stream_processor_record_count{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",state=~\"processed|committed\"} and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · {{state}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Partition Record Counts",
+      "type": "timeseries",
+      "description": "Committed and processed record high-water counts for each Leader partition. These cumulative positions are exported as Gauges, not interval rates."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 27
+      },
+      "id": 45,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "process_cpu_usage{cluster=~\"$cluster\",broker=~\"$broker\"}",
+          "legendFormat": "{{broker}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "description": "Process CPU utilization for each Broker in the selected Cluster."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "bytes",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 27
+      },
+      "id": 46,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (broker, area) (jvm_memory_used_bytes{cluster=~\"$cluster\",broker=~\"$broker\"})",
+          "legendFormat": "{{broker}} · {{area}} · used",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum by (broker, area) (jvm_memory_committed_bytes{cluster=~\"$cluster\",broker=~\"$broker\"})",
+          "legendFormat": "{{broker}} · {{area}} · committed",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "sum by (broker, area) (clamp_min(jvm_memory_max_bytes{cluster=~\"$cluster\",broker=~\"$broker\"}, 0))",
+          "legendFormat": "{{broker}} · {{area}} · max",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "JVM Memory",
+      "type": "timeseries",
+      "description": "JVM memory used, committed, and maximum capacity by Broker and memory area."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "bytes",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 27
+      },
+      "id": 47,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (broker, path) (disk_total_bytes{cluster=~\"$cluster\",broker=~\"$broker\"}) - max by (broker, path) (disk_free_bytes{cluster=~\"$cluster\",broker=~\"$broker\"})",
+          "legendFormat": "{{broker}} · {{path}} · used",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (broker, path) (disk_free_bytes{cluster=~\"$cluster\",broker=~\"$broker\"})",
+          "legendFormat": "{{broker}} · {{path}} · free",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Disk Capacity",
+      "type": "timeseries",
+      "description": "Used and free filesystem capacity visible to each Broker process."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 6,
+      "panels": [],
+      "title": "Command & Record Processing - $cluster",
+      "description": "Broker record stream consumption, command queue depth, and command completion latency.",
+      "type": "row",
+      "repeat": "cluster"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 0,
+        "y": 36
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, broker, partition, action) (rate(taskite_stream_processor_records_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval])) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · {{action}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Records / s by Partition",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 36
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "(sum by (cluster, broker, partition) (rate(taskite_stream_processor_records_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",action=\"written\"}[$__rate_interval])) / clamp_min(sum by (cluster, broker, partition) (rate(taskite_stream_processor_records_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",action=\"processed\"}[$__rate_interval])), 0.000001)) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Written Records per Processed Command",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Distribution of commands already awaiting a business event or rejection when a new command is submitted.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "decimals": 1,
+          "mappings": [],
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 0,
+        "y": 44
+      },
+      "id": 49,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum by (le, cluster, broker, partition) (rate(taskite_stream_partition_command_pending_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · p50",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition) (rate(taskite_stream_partition_command_pending_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · p95",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum by (le, cluster, broker, partition) (rate(taskite_stream_partition_command_pending_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · p99",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Command Pending at Submit",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Command latency split between Raft append commit and waiting for the matching business event or rejection.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 10,
+        "y": 44
+      },
+      "id": 50,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum by (le, cluster, broker, partition, phase) (rate(taskite_stream_partition_command_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · {{phase}} · p50",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition, phase) (rate(taskite_stream_partition_command_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · {{phase}} · p95",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum by (le, cluster, broker, partition, phase) (rate(taskite_stream_partition_command_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}} · {{phase}} · p99",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Command Phase Latency",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "id": 9,
+      "panels": [],
+      "title": "Jobs - $cluster",
+      "type": "row",
+      "repeat": "cluster"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 53
+      },
+      "id": 40,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster) (rate(taskite_job_events_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",action=\"created\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Job Creation / s",
+      "type": "timeseries",
+      "description": "Rate of committed Job creation events."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 53
+      },
+      "id": 41,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster) (rate(taskite_job_events_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\",action=\"completed\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Job Completion / s",
+      "type": "timeseries",
+      "description": "Rate of committed Job completion events."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 61
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, action) (rate(taskite_job_events_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}} · {{action}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Job Events / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 61
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, job_type, action) (rate(taskite_job_events_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}} · {{job_type}} · {{action}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Job Events by Type / s",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 70
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Incidents - $cluster",
+      "type": "row",
+      "repeat": "cluster"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 71
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, action) (rate(taskite_incident_events_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3)))",
+          "legendFormat": "{{cluster}} · {{action}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Incident Events / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 71
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "taskite_pending_incidents{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{cluster}} · {{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pending Incidents by Partition",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 80
+      },
+      "id": 53,
+      "panels": [],
+      "repeat": "cluster",
+      "title": "Command Batches - $cluster",
+      "description": "Committed command batch execution, log appends, continuations, retries, and result shapes.",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Commands executed in each successfully committed processing batch.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 81
+      },
+      "id": 54,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50, sum by (le, cluster, broker, partition) (rate(taskite_stream_processor_batch_commands_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · p50",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition) (rate(taskite_stream_processor_batch_commands_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · p95",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Commands per Batch",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Processor execution time for successfully committed batches; excludes result Raft commit and state commit.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 81
+      },
+      "id": 55,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition) (rate(taskite_stream_processor_batch_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · p95",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99, sum by (le, cluster, broker, partition) (rate(taskite_stream_processor_batch_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · p99",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Batch Execution Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Follow-up commands deferred because the current batch reached its command admission limit.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 81
+      },
+      "id": 56,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, broker, partition, reason) (rate(taskite_stream_processor_batch_continuations_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval])) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · {{reason}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Batch Continuations / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Final record count in atomic LogStream appends after Sequencer framing.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 89
+      },
+      "id": 57,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition) (rate(taskite_logstream_append_batch_records_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · p95",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Log Append Batch Records",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Final payload bytes in atomic LogStream appends after entry and batch framing.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 89
+      },
+      "id": 58,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition) (rate(taskite_logstream_append_batch_bytes_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · p95",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Log Append Batch Bytes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Processing batches rolled back and retried after exceeding the payload limit.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 89
+      },
+      "id": 59,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, broker, partition) (rate(taskite_stream_processor_batch_retries_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval])) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Batch Retries / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "p95 latency of queue wait, result Raft commit, state commit, and direct response delivery. Command batch execution is shown in Batch Execution Latency.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 97
+      },
+      "id": 60,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition, phase) (rate(taskite_stream_processor_phase_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · {{phase}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Processing Phase Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "p95 time spent executing queued actions after the state transaction commits.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 97
+      },
+      "id": 61,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition) (rate(taskite_stream_processor_post_commit_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · p95",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Post-Commit Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Successfully committed batches grouped by records, response-only, post-commit-only, or empty result shape.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 97
+      },
+      "id": 62,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, broker, partition, state) (rate(taskite_stream_processor_batch_results_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval])) and on (cluster, broker, partition) (max by (cluster, broker, partition) (taskite_pd_partition_role{pd_node=~\"$pd_node\",cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"} == 3))",
+          "legendFormat": "{{broker}} · p{{partition}} · {{state}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Batch Result Shapes / s",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 105
+      },
+      "id": 63,
+      "panels": [],
+      "repeat": "cluster",
+      "title": "Raft Snapshots - $cluster",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Encoded Raft log bytes not yet covered by the latest successful snapshot.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 106
+      },
+      "id": 64,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (cluster, broker, partition) (taskite_snapshot_uncovered_log_bytes{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"})",
+          "legendFormat": "{{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Uncovered Log Bytes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Encoded bytes currently retained by the local Raft log on the partition leader.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 106
+      },
+      "id": 65,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (cluster, broker, partition) (taskite_raft_log_retained_bytes{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"})",
+          "legendFormat": "{{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Retained Raft Log Bytes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Leader snapshot triggers grouped by size, interval, manual, and retry reason.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 106
+      },
+      "id": 66,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, broker, partition, reason) (rate(taskite_snapshot_trigger_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))",
+          "legendFormat": "{{broker}} · p{{partition}} · {{reason}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Triggers / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "p95 end-to-end snapshot attempt latency for successful and failed attempts. Skipped attempts are counted in Snapshot Attempts / s.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 106
+      },
+      "id": 67,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, cluster, broker, partition, result) (rate(taskite_snapshot_duration_seconds_bucket{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval])))",
+          "legendFormat": "{{broker}} · p{{partition}} · {{result}} · p95",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Attempt Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Physical size of the latest successfully persisted RocksDB checkpoint.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 114
+      },
+      "id": 68,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (cluster, broker, partition) (taskite_snapshot_size_bytes{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"})",
+          "legendFormat": "{{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Size",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Completed snapshot attempts grouped by success, failure, and skipped result.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 114
+      },
+      "id": 69,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, broker, partition, result) (rate(taskite_snapshot_attempt_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))",
+          "legendFormat": "{{broker}} · p{{partition}} · {{result}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Attempts / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Snapshot retries scheduled after failed or temporarily skipped attempts.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 114
+      },
+      "id": 70,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (cluster, broker, partition) (rate(taskite_snapshot_retry_total{cluster=~\"$cluster\",broker=~\"$broker\",partition=~\"$partition\"}[$__rate_interval]))",
+          "legendFormat": "{{broker}} · p{{partition}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Snapshot Retries / s",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "taskite",
+    "broker",
+    "prometheus"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(taskite_pd_raft_role, pd_node)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "PD Node",
+        "multi": true,
+        "name": "pd_node",
+        "options": [],
+        "query": {
+          "query": "label_values(taskite_pd_raft_role, pd_node)",
+          "refId": "PrometheusVariableQueryEditor-PDNode"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "demo",
+          "value": "demo"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values({__name__=~\"taskite_pending_incidents|taskite_pd_broker_status|taskite_stream_partition_command_duration_seconds_count\",cluster!=\"placement-driver\"}, cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cluster",
+        "multi": true,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "label_values({__name__=~\"taskite_pending_incidents|taskite_pd_broker_status|taskite_stream_partition_command_duration_seconds_count\",cluster!=\"placement-driver\"}, cluster)",
+          "refId": "PrometheusVariableQueryEditor-Cluster"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values({__name__=~\"taskite_pending_incidents|taskite_pd_broker_status|taskite_stream_partition_command_duration_seconds_count\",cluster=~\"$cluster\",cluster!=\"placement-driver\"}, broker)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Broker",
+        "multi": true,
+        "name": "broker",
+        "options": [],
+        "query": {
+          "query": "label_values({__name__=~\"taskite_pending_incidents|taskite_pd_broker_status|taskite_stream_partition_command_duration_seconds_count\",cluster=~\"$cluster\",cluster!=\"placement-driver\"}, broker)",
+          "refId": "PrometheusVariableQueryEditor-Broker"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values({__name__=~\"taskite_pending_incidents|taskite_pd_partition_health|taskite_stream_partition_command_duration_seconds_count\",cluster=~\"$cluster\",cluster!=\"placement-driver\"}, partition)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Partition",
+        "multi": true,
+        "name": "partition",
+        "options": [],
+        "query": {
+          "query": "label_values({__name__=~\"taskite_pending_incidents|taskite_pd_partition_health|taskite_stream_partition_command_duration_seconds_count\",cluster=~\"$cluster\",cluster!=\"placement-driver\"}, partition)",
+          "refId": "PrometheusVariableQueryEditor-Partition"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Taskite Broker",
+  "uid": "taskite-broker",
+  "version": 4,
+  "weekStart": ""
+}

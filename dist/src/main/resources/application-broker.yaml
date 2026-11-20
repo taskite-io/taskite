@@ -1,0 +1,140 @@
+server:
+  # Disable the primary HTTP listener; Broker management uses the separate Actuator listener.
+  port: -1
+  # Gracefully stop the web server during application shutdown.
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    # Maximum wait for each Spring lifecycle shutdown phase.
+    timeout-per-shutdown-phase: 30s
+  main:
+    # Print the Spring Boot startup banner to the console.
+    banner-mode: console
+  web:
+    resources:
+      # Disable Spring Boot's default static resource mappings.
+      add-mappings: false
+
+management:
+  server:
+    # Bind address of the dedicated Actuator management listener.
+    address: ${MANAGEMENT_SERVER_ADDRESS:0.0.0.0}
+    # HTTP port for Broker health and Prometheus endpoints.
+    port: ${MANAGEMENT_SERVER_PORT:9600}
+  endpoints:
+    # Disable endpoints unless they are explicitly enabled below.
+    enabled-by-default: false
+    web:
+      exposure:
+        # Expose only health and Prometheus endpoints over HTTP.
+        include: health,prometheus
+  endpoint:
+    health:
+      # Enable the health endpoint.
+      enabled: true
+      # Do not expose detailed component health information in HTTP responses.
+      show-details: never
+      probes:
+        # Enable liveness and readiness health probes.
+        enabled: true
+      group:
+        readiness:
+          # Combine Spring readiness state with the Broker's runtime readiness contributor.
+          include: readinessState,brokerReadiness
+    prometheus:
+      # Enable the Prometheus scrape endpoint.
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        # Enable publishing collected metrics through the Prometheus registry.
+        enabled: true
+
+taskite:
+  broker:
+    # Enable the Broker runtime and its lifecycle-managed components.
+    enabled: ${TASKITE_BROKER_ENABLED:true}
+    worker-job-lease-token:
+      # Enable the Worker job token verification and recovery feature. Default is true.
+      enabled: ${TASKITE_BROKER_WORKER_JOB_LEASE_TOKEN_ENABLED:true}
+    cluster:
+      # Existing cluster registered in PD; must be explicitly configured before Broker startup.
+      cluster-id: ${TASKITE_BROKER_CLUSTER_CLUSTER_ID:}
+      # Unique Broker identity within that cluster.
+      broker-id: ${TASKITE_BROKER_CLUSTER_BROKER_ID:broker-0}
+    network:
+      # Advertised host reachable by Gateways, PD and other Brokers.
+      host: ${TASKITE_BROKER_NETWORK_HOST:127.0.0.1}
+      # Business gRPC port for commands and PD partition-topology operations.
+      command-port: ${TASKITE_BROKER_NETWORK_COMMAND_PORT:26501}
+      # Dedicated Broker-to-Broker Raft port; must differ from the command port.
+      raft-port: ${TASKITE_BROKER_NETWORK_RAFT_PORT:26502}
+    registration:
+      # Comma-separated PD gRPC endpoints; required for Broker registration and discovery.
+      placement-drivers: ${TASKITE_BROKER_REGISTRATION_PLACEMENT_DRIVERS:}
+      # Normal registration renewal interval; must be shorter than the RPC timeout.
+      renew-interval: ${TASKITE_BROKER_REGISTRATION_RENEW_INTERVAL:1s}
+      # Local PD RPC timeout, also reported to PD; PD's own lease timeout remains authoritative.
+      renewal-timeout: ${TASKITE_BROKER_REGISTRATION_RENEWAL_TIMEOUT:30s}
+      backpressure:
+        # Initial retry delay after explicit PD backpressure; must be at least 1ms.
+        min-delay: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_MIN_DELAY:50ms}
+        # Maximum retry delay; actual waits are also capped by renew-interval.
+        max-delay: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_MAX_DELAY:5s}
+        # Exponential retry-delay growth factor; must be finite and at least 1.
+        backoff-factor: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_BACKOFF_FACTOR:1.6}
+        # Symmetric jitter fraction in [0, 1]; 0.1 adds up to +/-10% variation.
+        jitter-factor: ${TASKITE_BROKER_REGISTRATION_BACKPRESSURE_JITTER_FACTOR:0.1}
+      # Interval for refreshing PD topology used by the registration client.
+      topology-refresh-interval: ${TASKITE_BROKER_REGISTRATION_TOPOLOGY_REFRESH_INTERVAL:5s}
+    storage:
+      # Persistent data root; Broker data is placed under {data-dir}/{cluster-id}/{broker-id}.
+      data-dir: ${TASKITE_BROKER_STORAGE_DATA_DIR:target/broker-data}
+      snapshot:
+        # Time-based snapshot trigger; zero disables this trigger.
+        interval: ${TASKITE_BROKER_STORAGE_SNAPSHOT_INTERVAL:15m}
+        # Raft log-size snapshot trigger; zero disables it. Either enabled trigger can start a snapshot.
+        log-size-threshold: ${TASKITE_BROKER_STORAGE_SNAPSHOT_LOG_SIZE_THRESHOLD:128MB}
+    consensus:
+      # Raft election timeout for Broker partition groups.
+      election-timeout: ${TASKITE_BROKER_CONSENSUS_ELECTION_TIMEOUT:5s}
+    processing:
+      # Maximum commands processed in one state transaction; 1 disables command batching.
+      max-commands-in-batch: ${TASKITE_BROKER_PROCESSING_MAX_COMMANDS_IN_BATCH:1}
+      # Soft record-count admission budget for a batch; zero disables this budget.
+      max-records-in-batch: ${TASKITE_BROKER_PROCESSING_MAX_RECORDS_IN_BATCH:0}
+      # Soft processing-time admission budget for a batch; zero disables this budget.
+      max-batch-duration: ${TASKITE_BROKER_PROCESSING_MAX_BATCH_DURATION:0ms}
+      # Maximum final payload bytes in one atomic log batch; minimum 1024 bytes.
+      max-batch-bytes: ${TASKITE_BROKER_PROCESSING_MAX_BATCH_BYTES:3145728}
+    backpressure:
+      # Enable an independent concurrency window per partition; exempt completion/deployment commands bypass it.
+      enabled: ${TASKITE_BROKER_BACKPRESSURE_ENABLED:true}
+      # Concurrency-limit algorithm: aimd, vegas or fixed.
+      algorithm: ${TASKITE_BROKER_BACKPRESSURE_ALGORITHM:aimd}
+      aimd:
+        # Response-time threshold for reducing concurrency; this is not an RPC deadline.
+        request-timeout: ${TASKITE_BROKER_BACKPRESSURE_AIMD_REQUEST_TIMEOUT:200ms}
+        # Starting concurrent-request limit.
+        initial-limit: ${TASKITE_BROKER_BACKPRESSURE_AIMD_INITIAL_LIMIT:100}
+        # Lower bound of the adaptive concurrent-request limit.
+        min-limit: ${TASKITE_BROKER_BACKPRESSURE_AIMD_MIN_LIMIT:1}
+        # Upper bound of the adaptive concurrent-request limit.
+        max-limit: ${TASKITE_BROKER_BACKPRESSURE_AIMD_MAX_LIMIT:1000}
+        # Multiplicative reduction factor for slow responses or dropped requests.
+        backoff-ratio: ${TASKITE_BROKER_BACKPRESSURE_AIMD_BACKOFF_RATIO:0.9}
+      vegas:
+        # Starting concurrent-request limit.
+        initial-limit: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_INITIAL_LIMIT:20}
+        # Estimated queue-size threshold below which concurrency can increase.
+        alpha: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_ALPHA:3}
+        # Estimated queue-size threshold above which concurrency decreases.
+        beta: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_BETA:6}
+        # Maximum concurrency allowed by the adaptive window.
+        max-limit: ${TASKITE_BROKER_BACKPRESSURE_VEGAS_MAX_LIMIT:1000}
+      fixed:
+        # Constant maximum number of concurrent requests per partition.
+        limit: ${TASKITE_BROKER_BACKPRESSURE_FIXED_LIMIT:20}
+    # Broker version reported during registration.
+    version: ${TASKITE_BROKER_VERSION:0.1.0-SNAPSHOT}

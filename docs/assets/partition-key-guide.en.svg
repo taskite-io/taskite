@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-labelledby="title description">
+  <title id="title">Broker key components: 1 sign bit, 4 cluster bits, 9 partition bits, 50 sequence bits</title>
+  <desc id="description">A key contains a sign bit, clusterKey, partitionId, and partition sequence. Cluster key 0 is reserved for PD, and 1 through 15 identify Broker clusters. Each cluster supports 511 partitions. Actual partition IDs 1 through 511 are stored directly, reserving 0. Entity sequences start at 1.</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #19332A; }
+    .muted { fill: #62716B; }
+    .card { fill: #FFFFFF; stroke: #D5E2DB; }
+    .mono { font-family: "SFMono-Regular", Menlo, Consolas, monospace; }
+  </style>
+  <rect width="1000" height="320" fill="#F5F8F6"/>
+  <text x="50" y="48" font-size="28" font-weight="600">Broker key: cluster · partition · sequence</text>
+  <text x="50" y="80" font-size="18" class="muted">Automatically generated positive ID · 15 Broker clusters · 511 partitions per cluster</text>
+  <rect x="50" y="108" width="14.0625" height="56" fill="#DCE5E0"/>
+  <rect x="64.0625" y="108" width="56.25" height="56" fill="#A4D5BC"/>
+  <rect x="120.3125" y="108" width="126.5625" height="56" fill="#66B28D"/>
+  <rect x="246.875" y="108" width="703.125" height="56" fill="#216844"/>
+  <text x="57" y="142" font-size="14" text-anchor="middle" class="mono">0</text>
+  <text x="92.1875" y="142" font-size="14" text-anchor="middle" class="mono">4 bit</text>
+  <text x="183.59375" y="142" font-size="17" text-anchor="middle" class="mono">9 bit</text>
+  <text x="598.4375" y="142" font-size="22" text-anchor="middle" style="fill:#FFFFFF">50-bit partition sequence</text>
+  <rect class="card" x="50" y="192" width="156" height="96" rx="10"/>
+  <text x="66" y="225" font-size="19" font-weight="600">Sign · 1 bit</text>
+  <text x="66" y="258" font-size="17">Always 0</text>
+  <rect class="card" x="230" y="192" width="224" height="96" rx="10"/>
+  <text x="248" y="225" font-size="19" font-weight="600">clusterKey · 4 bits</text>
+  <text x="248" y="251" font-size="16">0: reserved for PD</text>
+  <text x="248" y="276" font-size="16">1–15: Broker clusters</text>
+  <rect class="card" x="478" y="192" width="224" height="96" rx="10"/>
+  <text x="496" y="225" font-size="19" font-weight="600">Partition ID · 9 bits</text>
+  <text x="496" y="258" font-size="17">Actual IDs: 1–511</text>
+  <rect class="card" x="726" y="192" width="224" height="96" rx="10"/>
+  <text x="744" y="225" font-size="19" font-weight="600">Sequence · 50 bits</text>
+  <text x="744" y="258" font-size="17">Entities start at 1</text>
+</svg>
